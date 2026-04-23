@@ -161,7 +161,15 @@ jobs:
         if [ -z "$grid_pdf" ] || [ "$grid_pdf" = "true" ]; then
           options="$options --grid"
         fi
-        python scrape_schedule.py $options
+
+        # Run the scraper; if it fails (maintenance mode, empty scrape,
+        # Cloudflare block), skip the release to preserve the last known
+        # good output rather than overwriting it with nothing.
+        if ! python scrape_schedule.py $options; then
+          echo "::warning::Schedule generation failed — site may be in maintenance mode or unreachable. Preserving existing release."
+          echo "changed=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
 
         # Compare hashes to decide whether to release
         if [ "${{ github.event.inputs.force_generate }}" = "true" ]; then
