@@ -217,6 +217,8 @@ def _shorten_time(time_str):
 
 def create_grid_pdf(rooms, filename, include_title=True):
     """Generate a landscape grid PDF showing all rooms side by side, matching the xlsx layout."""
+    if not rooms:
+        return
     page_width, page_height = landscape(letter)
     doc = SimpleDocTemplate(
         filename,
@@ -396,6 +398,10 @@ if __name__ == "__main__":
             sys.exit(1)
         else:
             raise
+
+    if not rooms:
+        print("Error: No rooms were found in the schedule. The page may be blocked or empty.")
+        sys.exit(1)
 
     # Compute hash once, reuse for --hash, --hash-file, or both
     schedule_hash = hashlib.sha256(json.dumps(rooms, sort_keys=True).encode()).hexdigest()
