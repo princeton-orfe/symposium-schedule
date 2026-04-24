@@ -48,7 +48,7 @@ def scrape_schedule(url=None):
     i = 0
     while i < len(lines):
         line = lines[i]
-        if line in ['001 - Sherrerd Hall', '003 - Sherrerd Hall', '008 - Sherrerd Hall', '101 - Sherrerd Hall', '107 - Sherrerd Hall', '110 - Sherrerd Hall', '123 - Sherrerd Hall', '125 - Sherrerd Hall']:
+        if line in ['001 - Sherrerd Hall', '003 - Sherrerd Hall', '008 - Sherrerd Hall', '101 - Sherrerd Hall', '107 - Sherrerd Hall', '110 - Sherrerd Hall', '122 - Sherrerd Hall', '123 - Sherrerd Hall', '125 - Sherrerd Hall']:
             room = line.split(' - ')[0]
             current_room = room
             rooms[current_room] = {'advisors': '', 'graders': '', 'schedule': []}
