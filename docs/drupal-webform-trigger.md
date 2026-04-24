@@ -6,8 +6,8 @@ This guide configures a Drupal 10 Webform button that triggers the GitHub Action
 
 **Limitations:**
 - Drupal Webforms cannot receive async callbacks, so we cannot show real-time "PDF ready" status
-- We use artificial confirmation messaging to give the user feedback
-- The workflow takes ~25 seconds to complete; the user sees a confirmation message immediately
+- Stock Webform text formats typically do not allow `<script>` tags, so JavaScript-based progress indicators are not available
+- The user sees a static confirmation message immediately; the workflow completes in ~25–30 seconds in the background
 
 ---
 
@@ -17,7 +17,7 @@ This guide configures a Drupal 10 Webform button that triggers the GitHub Action
 [Drupal Webform Button]
     → POST to GitHub API (workflow_dispatch)
         → GitHub Actions runs generate workflow
-            → PDFs updated in GitHub Release
+            → PDFs updated in GitHub Release (~25–30 seconds)
 ```
 
 ---
@@ -30,12 +30,14 @@ This guide configures a Drupal 10 Webform button that triggers the GitHub Action
 2. Click **Generate new token**
 3. Configure:
    - **Token name:** `drupal-schedule-trigger`
-   - **Expiration:** Set an appropriate expiration (e.g., 90 days — set a calendar reminder to rotate)
+   - **Expiration:** Set to the maximum (1 year). Set a calendar reminder to rotate before expiry.
    - **Repository access:** Select **Only select repositories** → choose `symposium-schedule`
    - **Permissions:**
      - **Actions:** Read and write (required to trigger workflows)
      - All other permissions: No access
 4. Click **Generate token** and copy the token immediately — you won't see it again
+
+> **Token rotation:** Fine-grained PATs max out at 1 year. To avoid downtime, regenerate the token before it expires and update the Webform handler header (see §2D). Alternatively, a **classic PAT** with the `repo` scope can be set to no expiration, though GitHub discourages this.
 
 ### 1B. Verify the API Endpoint Works
 
@@ -49,20 +51,27 @@ curl -X POST \
   -d '{"ref":"main","inputs":{"force_generate":"true"}}'
 ```
 
-- **204 No Content** = success (the API returns no body)
+- **Empty response (no output)** = success (HTTP 204 No Content)
 - **404 Not Found** = wrong repo path or token lacks Actions permission
 - **422 Unprocessable Entity** = wrong ref or input names
+- **401 Unauthorized** = bad or expired token
 
-### 1C. Stable PDF Download URL
+Confirm the workflow ran via the GitHub Actions tab or:
 
-Once generated, the PDF is always available at this stable release URL:
+```bash
+gh run list --limit 3
+```
+
+### 1C. Stable PDF Download URLs
+
+Once generated, the PDFs are always available at these stable release URLs:
 
 ```
 https://github.com/pu-orfe/symposium-schedule/releases/download/latest/symposium_schedule.pdf
 https://github.com/pu-orfe/symposium-schedule/releases/download/latest/symposium_schedule_grid.pdf
 ```
 
-You can link to these from the confirmation page.
+These URLs always point to the most recent release. Link to them from the confirmation message.
 
 ---
 
@@ -83,6 +92,7 @@ Go to the **Build** tab and add these elements:
 - **Type:** Basic HTML / Markup
 - **Key:** `instructions`
 - **Markup:**
+
 ```html
 <div class="messages messages--info">
   <h3>Regenerate Schedule PDFs</h3>
@@ -95,7 +105,7 @@ Go to the **Build** tab and add these elements:
 
 #### Element 2: Hidden field (payload)
 
-This is needed because Webforms requires at least one input element to submit. It also carries the API payload.
+This is needed because Webforms requires at least one input element to submit.
 
 - **Type:** Hidden
 - **Key:** `ref`
@@ -106,7 +116,7 @@ This is needed because Webforms requires at least one input element to submit. I
 - **Label:** `Regenerate PDFs Now`
 - Under **Button attributes → Class**, add: `button--primary`
 
-### 2C. Configure the Confirmation Page
+### 2C. Configure the Confirmation Message
 
 Go to the **Settings** tab → **Confirmation**:
 
@@ -114,21 +124,23 @@ Go to the **Settings** tab → **Confirmation**:
 2. **Confirmation message:**
 
 ```html
-<div class="messages messages--status">
-  <h3>PDF Regeneration Triggered</h3>
-  <p>The schedule PDFs are being regenerated. This typically takes about 30 seconds.</p>
-  <p>Updated files will be available shortly at:</p>
-  <ul>
-    <li><a href="https://github.com/pu-orfe/symposium-schedule/releases/download/latest/symposium_schedule.pdf" target="_blank">Schedule PDF (with QR codes)</a></li>
-    <li><a href="https://github.com/pu-orfe/symposium-schedule/releases/download/latest/symposium_schedule_grid.pdf" target="_blank">Grid Schedule PDF (landscape)</a></li>
-  </ul>
-  <p><em>If the website is currently in maintenance mode, the previous versions will remain unchanged.</em></p>
-</div>
+<h3>PDF Regeneration Triggered ✓</h3>
+<p>The schedule PDFs are being regenerated from the live website.
+This process takes approximately 30 seconds.</p>
+<p><strong>Download links</strong> (allow 30 seconds before clicking):</p>
+<ul>
+  <li><a href="https://github.com/pu-orfe/symposium-schedule/releases/download/latest/symposium_schedule.pdf" target="_blank">Schedule PDF (with QR codes)</a></li>
+  <li><a href="https://github.com/pu-orfe/symposium-schedule/releases/download/latest/symposium_schedule_grid.pdf" target="_blank">Grid Schedule PDF (landscape)</a></li>
+</ul>
+<p><em>If the website is currently in maintenance mode, the previous versions
+will remain unchanged.</em></p>
 ```
 
 3. Under **Confirmation back**:
    - **Display back to form link:** Yes
    - **Back link label:** `← Regenerate again`
+
+> **Note on progress indicators:** Stock Drupal 10 Webform text formats do not allow `<script>` tags, so a JavaScript-based progress bar or polling indicator is not possible without a custom text format or module. The static confirmation with "allow 30 seconds" guidance is the best option with stock Webforms.
 
 ### 2D. Configure the Remote Post Handler
 
@@ -175,6 +187,8 @@ User-Agent: Drupal-Webform
 ```
 
 > **Security note:** The PAT is stored in the handler config. Only users with Webform admin access can view it. For additional security, consider using Drupal's Key module to store the token separately (see Security Considerations below).
+>
+> **Token rotation:** When you regenerate the PAT (see §1A), update the `Authorization` header here with the new token value.
 
 **Error Handling:**
 - **Completed debug:** Disable in production (enable temporarily for troubleshooting)
@@ -215,6 +229,8 @@ Since this is a trigger button, not a data collection form:
 
 ### Step 2: Verify the Workflow Ran
 
+Check the GitHub Actions tab, or from terminal:
+
 ```bash
 gh run list --limit 3
 ```
@@ -223,11 +239,11 @@ You should see a `workflow_dispatch` triggered run.
 
 ### Step 3: Verify PDFs Updated
 
-Check the release page or download the PDFs from the stable URLs.
+Download the PDFs from the stable release URLs and confirm they reflect current content.
 
 ### Step 4: Disable Debug
 
-Turn off **Completed debug** once everything works.
+Turn off **Completed debug** on the handler once everything works.
 
 ---
 
@@ -246,17 +262,27 @@ The GitHub PAT is stored in the Webform handler configuration. To improve securi
 1. Set `GITHUB_PAT` in your Drupal environment
 2. Use Drupal's settings.php or a custom module to inject it
 
-**Option C: Accept the risk**
+**Option C: Accept the risk (simplest)**
 - The handler config is only visible to Webform admins
-- The PAT has minimal scope (Actions on one repo)
-- Set a short expiration and rotate regularly
+- The PAT has minimal scope (Actions write on one repo only)
+- Set the maximum expiration (1 year) and rotate before it expires
+
+### Token Rotation
+
+1. Go to **GitHub → Settings → Developer settings → Fine-grained tokens**
+2. Find `drupal-schedule-trigger` and click **Regenerate**
+3. Set expiration to maximum (1 year)
+4. Copy the new token
+5. In Drupal, go to the Webform → **Handlers** → edit the Remote Post handler
+6. Update the `Authorization: Bearer ...` header with the new token
+7. Test by submitting the form and confirming a 204 in the debug log
 
 ### Rate Limiting
 
 Multiple layers of protection prevent abuse:
 1. **Drupal Webform:** Per-user submission limits
 2. **Drupal access control:** Role-based form access
-3. **GitHub workflow:** Built-in 5-minute rate limiting between runs
+3. **GitHub workflow:** Built-in 5-minute rate limiting between manual dispatch runs
 4. **GitHub API:** Token-based rate limits (5,000 requests/hour)
 
 ---
@@ -265,24 +291,26 @@ Multiple layers of protection prevent abuse:
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Form submits but no workflow runs | 401/403 from GitHub | Check PAT is valid and has Actions write permission |
-| 404 from GitHub API | Wrong repository path or workflow filename | Verify URL matches exactly |
+| Form submits but no workflow runs | 401/403 from GitHub | Check PAT is valid, not expired, and has Actions write permission |
+| 404 from GitHub API | Wrong repository path or workflow filename | Verify URL: `.../repos/pu-orfe/symposium-schedule/actions/workflows/generate.yml/dispatches` |
 | 422 from GitHub API | Bad JSON payload | Check custom data JSON syntax; ensure `ref` is `main` |
-| Confirmation shows but PDFs not updated | Workflow ran but hash unchanged | Use `force_generate: true` in custom data (already configured above) |
-| PDFs still old after 30+ seconds | Site in maintenance mode | Check workflow run in GitHub Actions for the warning annotation |
-| "Remote post error" in Drupal logs | Network/firewall issue | Ensure outbound HTTPS to api.github.com is allowed |
-| Old PDFs served after update | CDN/browser caching | GitHub release downloads have cache headers; try hard refresh or append `?v=timestamp` |
+| Confirmation shows but PDFs not updated | Workflow ran but hash unchanged | `force_generate: true` is already configured; check GitHub Actions for the run result |
+| PDFs still old after 60+ seconds | Site in maintenance mode | Check the workflow run in GitHub Actions — look for the warning annotation |
+| "Remote post error" in Drupal logs | Network/firewall issue | Ensure outbound HTTPS to `api.github.com` is allowed from the Drupal server |
+| Old PDFs served after update | Browser caching | Hard refresh (Ctrl+Shift+R) or open link in incognito |
+| No response from curl test | Firewall or proxy | Check that the machine can reach `api.github.com` on port 443 |
 
 ---
 
 ## Summary Checklist
 
-- [ ] GitHub PAT created with Actions read/write on the symposium-schedule repo
-- [ ] API endpoint tested via curl (204 response)
+- [ ] GitHub PAT created with Actions read/write on the symposium-schedule repo (max expiration)
+- [ ] API endpoint tested via curl (empty response = 204 success)
 - [ ] Webform created with markup, hidden field, and submit button
 - [ ] Remote Post handler configured with correct URL, JSON payload, and auth header
-- [ ] Confirmation message configured with download links
+- [ ] Confirmation message configured with download links and "allow 30 seconds" guidance
 - [ ] Access restricted to appropriate roles
 - [ ] Submission storage set to auto-purge
 - [ ] Tested end-to-end: form submit → workflow runs → PDFs updated
 - [ ] Debug mode disabled in production
+- [ ] Calendar reminder set for PAT rotation before expiry
