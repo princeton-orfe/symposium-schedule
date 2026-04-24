@@ -443,6 +443,72 @@ class TestScrapeSchedule(unittest.TestCase):
         self.assertIn('Smith', advisor_names_cell.text)
         self.assertNotIn('ORFE', advisor_names_cell.text)
 
+    @patch('scrape_schedule.SimpleDocTemplate')
+    def test_create_grid_pdf_missing_advisors_graders(self, mock_doc_template):
+        """Test grid PDF leaves cells blank when a room has no advisors or graders."""
+        mock_doc = MagicMock()
+        mock_doc_template.return_value = mock_doc
+
+        rooms = {
+            '101': {
+                'advisors': 'ORFE Advisors: Smith',
+                'graders': 'PhD Candidate Graders: Jones',
+                'schedule': [('9:00 am – 9:15 am', 'Alice')],
+            },
+            '107': {
+                'advisors': '',
+                'graders': '',
+                'schedule': [('9:00 am – 9:15 am', 'Bob')],
+            },
+        }
+        create_grid_pdf(rooms, "test_grid.pdf")
+
+        build_call = mock_doc.build.call_args
+        story = build_call[0][0]
+        grid_table = None
+        for element in story:
+            if isinstance(element, Table):
+                grid_table = element
+                break
+        self.assertIsNotNone(grid_table)
+        # Room 101 is col 1, room 107 is col 2 (col 0 is label)
+        # Advisor row (index 1): room 101 should have Smith, room 107 should be blank
+        self.assertIn('Smith', grid_table._cellvalues[1][1].text)
+        self.assertEqual('', grid_table._cellvalues[1][2].text)
+        # Grader row (index 2): room 101 should have Jones, room 107 should be blank
+        self.assertIn('Jones', grid_table._cellvalues[2][1].text)
+        self.assertEqual('', grid_table._cellvalues[2][2].text)
+        # Row label should still be derived from room 101
+        self.assertIn('ORFE Advisors', grid_table._cellvalues[1][0].text)
+        self.assertIn('PhD Candidate Graders', grid_table._cellvalues[2][0].text)
+
+    @patch('scrape_schedule.sync_playwright')
+    def test_scrape_room_without_advisors_graders(self, mock_playwright):
+        """Test that rooms without advisor/grader lines get empty strings."""
+        mock_page = MagicMock()
+        mock_page.content.return_value = """<html><body>
+        101 - Sherrerd Hall
+        ORFE Advisors: Smith
+        PhD Candidate Graders: Jones
+        9:00 am – 9:15 am
+        Alice
+        107 - Sherrerd Hall
+        9:00 am – 9:15 am
+        Bob
+        </body></html>"""
+
+        mock_browser = MagicMock()
+        mock_browser.new_page.return_value = mock_page
+        mock_context = MagicMock()
+        mock_context.chromium.launch.return_value = mock_browser
+        mock_playwright.return_value.__enter__.return_value = mock_context
+
+        rooms = scrape_schedule()
+        self.assertIn('Smith', rooms['101']['advisors'])
+        self.assertIn('Jones', rooms['101']['graders'])
+        self.assertEqual('', rooms['107']['advisors'])
+        self.assertEqual('', rooms['107']['graders'])
+
     @patch('scrape_schedule.sync_playwright')
     def test_maintenance_mode_detection(self, mock_playwright):
         """Test that maintenance mode is properly detected and raises exception."""
