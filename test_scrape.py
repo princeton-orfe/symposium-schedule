@@ -267,6 +267,95 @@ class TestScrapeSchedule(unittest.TestCase):
         self.assertTrue(args.qr_codes)
         self.assertTrue(args.grid)
 
+    @patch('scrape_schedule.SimpleDocTemplate')
+    def test_create_grid_pdf_alt_grader_label(self, mock_doc_template):
+        """Test grid PDF uses alternate grader label when present."""
+        mock_doc = MagicMock()
+        mock_doc_template.return_value = mock_doc
+
+        rooms = {
+            '101': {
+                'advisors': 'ORFE Advisors: Smith',
+                'graders': 'PhD Candidates / Graduate Students: Jones',
+                'schedule': [('9:00 am – 9:15 am', 'Alice')],
+            },
+        }
+        create_grid_pdf(rooms, "test_grid.pdf")
+
+        build_call = mock_doc.build.call_args
+        story = build_call[0][0]
+        grid_table = None
+        for element in story:
+            if isinstance(element, Table):
+                grid_table = element
+                break
+        self.assertIsNotNone(grid_table)
+        # Row 2 (index 2) is the grader row; column 0 is the label
+        grader_label_cell = grid_table._cellvalues[2][0]
+        self.assertIn('PhD Candidates / Graduate Students', grader_label_cell.text)
+        # Column 1 should have names only, no prefix
+        grader_names_cell = grid_table._cellvalues[2][1]
+        self.assertIn('Jones', grader_names_cell.text)
+        self.assertNotIn('PhD', grader_names_cell.text)
+
+    @patch('scrape_schedule.sync_playwright')
+    def test_scrape_normalizes_grader_labels(self, mock_playwright):
+        """Test that inconsistent grader labels are normalized to the first seen."""
+        mock_page = MagicMock()
+        mock_page.content.return_value = """<html><body>
+        101 - Sherrerd Hall
+        ORFE Advisors: Smith
+        PhD Candidate Graders: Jones
+        9:00 am – 9:15 am
+        Alice
+        107 - Sherrerd Hall
+        ORFE Advisors: Doe
+        PhD Candidates / Graduate Students: Lee
+        9:00 am – 9:15 am
+        Bob
+        </body></html>"""
+
+        mock_browser = MagicMock()
+        mock_browser.new_page.return_value = mock_page
+        mock_context = MagicMock()
+        mock_context.chromium.launch.return_value = mock_browser
+        mock_playwright.return_value.__enter__.return_value = mock_context
+
+        rooms = scrape_schedule()
+        # First label seen is "PhD Candidate Graders:", so both should use it
+        self.assertTrue(rooms['101']['graders'].startswith('PhD Candidate Graders:'))
+        self.assertTrue(rooms['107']['graders'].startswith('PhD Candidate Graders:'))
+        self.assertIn('Jones', rooms['101']['graders'])
+        self.assertIn('Lee', rooms['107']['graders'])
+
+    @patch('scrape_schedule.sync_playwright')
+    def test_scrape_accepts_alt_grader_label_first(self, mock_playwright):
+        """Test that when the alternate label appears first, it becomes canonical."""
+        mock_page = MagicMock()
+        mock_page.content.return_value = """<html><body>
+        101 - Sherrerd Hall
+        ORFE Advisors: Smith
+        PhD Candidates / Graduate Students: Jones
+        9:00 am – 9:15 am
+        Alice
+        107 - Sherrerd Hall
+        ORFE Advisors: Doe
+        PhD Candidate Graders: Lee
+        9:00 am – 9:15 am
+        Bob
+        </body></html>"""
+
+        mock_browser = MagicMock()
+        mock_browser.new_page.return_value = mock_page
+        mock_context = MagicMock()
+        mock_context.chromium.launch.return_value = mock_browser
+        mock_playwright.return_value.__enter__.return_value = mock_context
+
+        rooms = scrape_schedule()
+        # First label seen is "PhD Candidates / Graduate Students:", so both should use it
+        self.assertTrue(rooms['101']['graders'].startswith('PhD Candidates / Graduate Students:'))
+        self.assertTrue(rooms['107']['graders'].startswith('PhD Candidates / Graduate Students:'))
+
     @patch('scrape_schedule.sync_playwright')
     def test_maintenance_mode_detection(self, mock_playwright):
         """Test that maintenance mode is properly detected and raises exception."""
