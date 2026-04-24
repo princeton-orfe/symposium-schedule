@@ -41,9 +41,11 @@ def scrape_schedule(url=None):
     soup = BeautifulSoup(content, 'html.parser')
     text = soup.get_text()
     lines = [line.strip() for line in text.split('\n') if line.strip()]
+    ADVISOR_LABELS = ['ORFE Advisors:', 'ORFE Advisers:']
     GRADER_LABELS = ['PhD Candidate Graders:', 'PhD Candidates / Graduate Students:']
     rooms = {}
     current_room = None
+    advisor_label = None  # first label seen wins
     grader_label = None  # first label seen wins
     i = 0
     while i < len(lines):
@@ -52,21 +54,27 @@ def scrape_schedule(url=None):
             room = line.split(' - ')[0]
             current_room = room
             rooms[current_room] = {'advisors': '', 'graders': '', 'schedule': []}
-        elif current_room and 'ORFE Advisors:' in line and any(gl in line for gl in GRADER_LABELS):
-            matched_label = next(gl for gl in GRADER_LABELS if gl in line)
+        elif current_room and any(al in line for al in ADVISOR_LABELS) and any(gl in line for gl in GRADER_LABELS):
+            matched_al = next(al for al in ADVISOR_LABELS if al in line)
+            matched_gl = next(gl for gl in GRADER_LABELS if gl in line)
+            if advisor_label is None:
+                advisor_label = matched_al
             if grader_label is None:
-                grader_label = matched_label
-            parts = line.split(matched_label)
-            rooms[current_room]['advisors'] = parts[0]
+                grader_label = matched_gl
+            parts = line.split(matched_gl)
+            rooms[current_room]['advisors'] = parts[0].replace(matched_al, advisor_label)
             rooms[current_room]['graders'] = grader_label + parts[1]
-        elif current_room and 'ORFE Advisors:' in line:
-            rooms[current_room]['advisors'] = line
+        elif current_room and any(al in line for al in ADVISOR_LABELS):
+            matched_al = next(al for al in ADVISOR_LABELS if al in line)
+            if advisor_label is None:
+                advisor_label = matched_al
+            rooms[current_room]['advisors'] = line.replace(matched_al, advisor_label)
         elif current_room and any(gl in line for gl in GRADER_LABELS):
-            matched_label = next(gl for gl in GRADER_LABELS if gl in line)
+            matched_gl = next(gl for gl in GRADER_LABELS if gl in line)
             if grader_label is None:
-                grader_label = matched_label
+                grader_label = matched_gl
             # Normalize to the first-seen label
-            rooms[current_room]['graders'] = line.replace(matched_label, grader_label)
+            rooms[current_room]['graders'] = line.replace(matched_gl, grader_label)
         elif current_room and ('am – ' in line or 'pm – ' in line):
             time = line
             i += 1
@@ -311,12 +319,22 @@ def create_grid_pdf(rooms, filename, include_title=True):
         header_row.append(Paragraph(f'SH {room}', header_style))
     table_data.append(header_row)
 
-    # Row 2: Advisors
-    advisor_row = [Paragraph('ORFE Advisors', advisor_label_style)]
+    # Row 2: Advisors — detect the label from the first room that has one
+    advisor_prefixes = ['ORFE Advisors:', 'ORFE Advisers:']
+    advisor_row_label = 'ORFE Advisors'
+    for room in sorted_rooms:
+        at = rooms[room].get('advisors', '')
+        for prefix in advisor_prefixes:
+            if at.startswith(prefix):
+                advisor_row_label = prefix.rstrip(':')
+                break
+        if advisor_row_label != 'ORFE Advisors':
+            break
+    advisor_row = [Paragraph(advisor_row_label, advisor_label_style)]
     for room in sorted_rooms:
         advisor_text = rooms[room].get('advisors', '')
-        # Strip the "ORFE Advisors:" prefix if present
-        advisor_text = advisor_text.replace('ORFE Advisors:', '').strip()
+        for prefix in advisor_prefixes:
+            advisor_text = advisor_text.replace(prefix, '').strip()
         advisor_row.append(Paragraph(advisor_text, advisor_style))
     table_data.append(advisor_row)
 

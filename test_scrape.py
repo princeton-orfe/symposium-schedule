@@ -357,6 +357,93 @@ class TestScrapeSchedule(unittest.TestCase):
         self.assertTrue(rooms['107']['graders'].startswith('PhD Candidates / Graduate Students:'))
 
     @patch('scrape_schedule.sync_playwright')
+    def test_scrape_normalizes_advisor_labels(self, mock_playwright):
+        """Test that inconsistent advisor labels are normalized to the first seen."""
+        mock_page = MagicMock()
+        mock_page.content.return_value = """<html><body>
+        101 - Sherrerd Hall
+        ORFE Advisors: Smith
+        PhD Candidate Graders: Jones
+        9:00 am – 9:15 am
+        Alice
+        107 - Sherrerd Hall
+        ORFE Advisers: Doe
+        PhD Candidate Graders: Lee
+        9:00 am – 9:15 am
+        Bob
+        </body></html>"""
+
+        mock_browser = MagicMock()
+        mock_browser.new_page.return_value = mock_page
+        mock_context = MagicMock()
+        mock_context.chromium.launch.return_value = mock_browser
+        mock_playwright.return_value.__enter__.return_value = mock_context
+
+        rooms = scrape_schedule()
+        self.assertTrue(rooms['101']['advisors'].startswith('ORFE Advisors:'))
+        self.assertTrue(rooms['107']['advisors'].startswith('ORFE Advisors:'))
+        self.assertIn('Smith', rooms['101']['advisors'])
+        self.assertIn('Doe', rooms['107']['advisors'])
+
+    @patch('scrape_schedule.sync_playwright')
+    def test_scrape_accepts_alt_advisor_label_first(self, mock_playwright):
+        """Test that when ORFE Advisers appears first, it becomes canonical."""
+        mock_page = MagicMock()
+        mock_page.content.return_value = """<html><body>
+        101 - Sherrerd Hall
+        ORFE Advisers: Smith
+        PhD Candidate Graders: Jones
+        9:00 am – 9:15 am
+        Alice
+        107 - Sherrerd Hall
+        ORFE Advisors: Doe
+        PhD Candidate Graders: Lee
+        9:00 am – 9:15 am
+        Bob
+        </body></html>"""
+
+        mock_browser = MagicMock()
+        mock_browser.new_page.return_value = mock_page
+        mock_context = MagicMock()
+        mock_context.chromium.launch.return_value = mock_browser
+        mock_playwright.return_value.__enter__.return_value = mock_context
+
+        rooms = scrape_schedule()
+        self.assertTrue(rooms['101']['advisors'].startswith('ORFE Advisers:'))
+        self.assertTrue(rooms['107']['advisors'].startswith('ORFE Advisers:'))
+
+    @patch('scrape_schedule.SimpleDocTemplate')
+    def test_create_grid_pdf_alt_advisor_label(self, mock_doc_template):
+        """Test grid PDF uses alternate advisor label when present."""
+        mock_doc = MagicMock()
+        mock_doc_template.return_value = mock_doc
+
+        rooms = {
+            '101': {
+                'advisors': 'ORFE Advisers: Smith',
+                'graders': 'PhD Candidate Graders: Jones',
+                'schedule': [('9:00 am – 9:15 am', 'Alice')],
+            },
+        }
+        create_grid_pdf(rooms, "test_grid.pdf")
+
+        build_call = mock_doc.build.call_args
+        story = build_call[0][0]
+        grid_table = None
+        for element in story:
+            if isinstance(element, Table):
+                grid_table = element
+                break
+        self.assertIsNotNone(grid_table)
+        # Row 1 (index 1) is the advisor row; column 0 is the label
+        advisor_label_cell = grid_table._cellvalues[1][0]
+        self.assertIn('ORFE Advisers', advisor_label_cell.text)
+        # Column 1 should have names only, no prefix
+        advisor_names_cell = grid_table._cellvalues[1][1]
+        self.assertIn('Smith', advisor_names_cell.text)
+        self.assertNotIn('ORFE', advisor_names_cell.text)
+
+    @patch('scrape_schedule.sync_playwright')
     def test_maintenance_mode_detection(self, mock_playwright):
         """Test that maintenance mode is properly detected and raises exception."""
         # Mock the page content to contain maintenance mode text
