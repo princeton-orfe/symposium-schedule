@@ -128,14 +128,17 @@
     min-height: 0;
   }
 
+  /* 1–5 rooms: single row */
   .rooms-grid.cols-1 { grid-template-columns: 1fr; }
   .rooms-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
   .rooms-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
   .rooms-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
   .rooms-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
-  .rooms-grid.cols-6 { grid-template-columns: repeat(6, 1fr); }
-  .rooms-grid.cols-7 { grid-template-columns: repeat(7, 1fr); }
-  .rooms-grid.cols-8 { grid-template-columns: repeat(8, 1fr); }
+  /* 6+ rooms: 2 rows — ceil(n/2) columns each */
+  .rooms-grid.cols-6 { grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; }
+  .rooms-grid.cols-7 { grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; }
+  .rooms-grid.cols-8 { grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; }
+  .rooms-grid.cols-9 { grid-template-columns: repeat(5, 1fr); grid-template-rows: 1fr 1fr; }
 
   /* ── Room card ───────────────────────────────────────────────── */
   .room-card {
@@ -263,25 +266,41 @@
   .rooms-grid.cols-5 .schedule-entry.is-break .entry-name { font-size: 0.89vw; }
   .rooms-grid.cols-5 .room-card-header { padding: 0.65vh 0.83vw 0.56vh; }
 
-  .rooms-grid.cols-6 .room-number, .rooms-grid.cols-7 .room-number { font-size: 1.35vw; }
-  .rooms-grid.cols-6 .room-meta, .rooms-grid.cols-7 .room-meta { font-size: 0.65vw; }
-  .rooms-grid.cols-6 .room-meta .meta-label, .rooms-grid.cols-7 .room-meta .meta-label { font-size: 0.55vw; }
-  .rooms-grid.cols-6 .entry-time, .rooms-grid.cols-7 .entry-time { font-size: 0.78vw; min-width: 3.44vw; }
-  .rooms-grid.cols-6 .entry-name, .rooms-grid.cols-7 .entry-name { font-size: 0.89vw; }
-  .rooms-grid.cols-6 .schedule-entry, .rooms-grid.cols-7 .schedule-entry { padding: 0.32vh 0.625vw; gap: 0.52vw; }
-  .rooms-grid.cols-6 .schedule-entry.is-break .entry-name, .rooms-grid.cols-7 .schedule-entry.is-break .entry-name { font-size: 0.78vw; }
-  .rooms-grid.cols-6 .room-card-header, .rooms-grid.cols-7 .room-card-header { padding: 0.56vh 0.625vw 0.46vh; }
-  .rooms-grid.cols-6, .rooms-grid.cols-7 { gap: 0.42vw; }
+  /* 6 rooms = 3 cols × 2 rows — reuse cols-3 sizing but tighter for half-height */
+  .rooms-grid.cols-6 .room-number { font-size: 1.46vw; }
+  .rooms-grid.cols-6 .room-meta { font-size: 0.7vw; }
+  .rooms-grid.cols-6 .room-meta .meta-label { font-size: 0.6vw; }
+  .rooms-grid.cols-6 .entry-time { font-size: 0.94vw; min-width: 4.4vw; }
+  .rooms-grid.cols-6 .entry-name { font-size: 1.09vw; }
+  .rooms-grid.cols-6 .schedule-entry { padding: 0.28vh 1.04vw; gap: 0.73vw; }
+  .rooms-grid.cols-6 .schedule-entry.is-break .entry-name { font-size: 0.94vw; }
+  .rooms-grid.cols-6 .room-card-header { padding: 0.56vh 1.04vw 0.46vh; }
 
-  .rooms-grid.cols-8 .room-number { font-size: 1.15vw; padding-bottom: 0.23vh; border-bottom-width: 0.1vw; }
-  .rooms-grid.cols-8 .room-meta { font-size: 0.6vw; margin-top: 0.37vh; }
-  .rooms-grid.cols-8 .room-meta .meta-label { font-size: 0.52vw; }
-  .rooms-grid.cols-8 .entry-time { font-size: 0.68vw; min-width: 2.92vw; }
-  .rooms-grid.cols-8 .entry-name { font-size: 0.78vw; }
-  .rooms-grid.cols-8 .schedule-entry { padding: 0.23vh 0.52vw; gap: 0.31vw; }
-  .rooms-grid.cols-8 .schedule-entry.is-break .entry-name { font-size: 0.68vw; }
-  .rooms-grid.cols-8 .room-card-header { padding: 0.46vh 0.52vw 0.37vh; }
-  .rooms-grid.cols-8 { gap: 0.31vw; }
+  /* 7-9 rooms = 4-5 cols × 2 rows — reuse cols-4 sizing but tighter for half-height */
+  .rooms-grid.cols-7 .room-number,
+  .rooms-grid.cols-8 .room-number,
+  .rooms-grid.cols-9 .room-number { font-size: 1.25vw; }
+  .rooms-grid.cols-7 .room-meta,
+  .rooms-grid.cols-8 .room-meta,
+  .rooms-grid.cols-9 .room-meta { font-size: 0.65vw; }
+  .rooms-grid.cols-7 .room-meta .meta-label,
+  .rooms-grid.cols-8 .room-meta .meta-label,
+  .rooms-grid.cols-9 .room-meta .meta-label { font-size: 0.55vw; }
+  .rooms-grid.cols-7 .entry-time,
+  .rooms-grid.cols-8 .entry-time,
+  .rooms-grid.cols-9 .entry-time { font-size: 0.83vw; min-width: 3.9vw; }
+  .rooms-grid.cols-7 .entry-name,
+  .rooms-grid.cols-8 .entry-name,
+  .rooms-grid.cols-9 .entry-name { font-size: 0.99vw; }
+  .rooms-grid.cols-7 .schedule-entry,
+  .rooms-grid.cols-8 .schedule-entry,
+  .rooms-grid.cols-9 .schedule-entry { padding: 0.23vh 0.83vw; gap: 0.52vw; }
+  .rooms-grid.cols-7 .schedule-entry.is-break .entry-name,
+  .rooms-grid.cols-8 .schedule-entry.is-break .entry-name,
+  .rooms-grid.cols-9 .schedule-entry.is-break .entry-name { font-size: 0.83vw; }
+  .rooms-grid.cols-7 .room-card-header,
+  .rooms-grid.cols-8 .room-card-header,
+  .rooms-grid.cols-9 .room-card-header { padding: 0.46vh 0.83vw 0.37vh; }
 
   /* ── Footer ──────────────────────────────────────────────────── */
   .display-footer {
@@ -532,7 +551,7 @@
   // ── Render ─────────────────────────────────────────────────────
   function render(rooms) {
     const app = document.getElementById('app');
-    const colCount = Math.min(rooms.length, 8);
+    const colCount = Math.min(rooms.length, 9);
 
     let html = `
       <div class="display-header">
