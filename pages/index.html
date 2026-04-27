@@ -18,7 +18,7 @@
 <body>
 <h1>ORFE Symposium Public Displays</h1>
 
-<h2>Display Pages</h2>
+<h2>Landscape Displays (TVs)</h2>
 <ul>
   <li>
     <a href="display.html?floor=ground">Ground Floor</a>
@@ -34,12 +34,33 @@
   </li>
 </ul>
 
-<h2>CSS Overrides</h2>
+<h2>Portrait Room Displays (iPad)</h2>
+<p class="desc">Individual room schedules for portrait-oriented 11" iPads.</p>
+<ul>
+  <li><a href="room.html?room=001">Room 001</a></li>
+  <li><a href="room.html?room=003">Room 003</a></li>
+  <li><a href="room.html?room=008">Room 008</a></li>
+  <li><a href="room.html?room=101">Room 101</a></li>
+  <li><a href="room.html?room=107">Room 107</a></li>
+  <li><a href="room.html?room=110">Room 110</a></li>
+  <li><a href="room.html?room=123">Room 123</a></li>
+  <li><a href="room.html?room=125">Room 125</a></li>
+</ul>
+
+<h2>CSS Overrides — Landscape (TVs)</h2>
 <p class="desc">For injecting onto the original symposium site URL directly.</p>
 <ul>
   <li><a href="override-base.css">override-base.css</a> — base display overrides (always include)</li>
   <li><a href="override-floor-ground.css">override-floor-ground.css</a> — ground floor filter</li>
   <li><a href="override-floor-1.css">override-floor-1.css</a> — 1st floor filter</li>
 </ul>
+
+<h2>CSS Override — Portrait (OBS Studio Browser Source)</h2>
+<p class="desc">
+  Single-room portrait layout for OBS. Set the browser source URL to
+  <code>https://symposium.orfe.princeton.edu</code>, resolution to portrait
+  (e.g. 1668&times;2388), then paste <a href="override-room.css">override-room.css</a>
+  into the Custom CSS field. Uncomment the line for the target room.
+</p>
 </body>
 </html>

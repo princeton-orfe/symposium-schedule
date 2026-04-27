@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORFE Symposium — Room Schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  /*
+   * Portrait single-room display for 11" iPad (820×1180 CSS px approx).
+   * Designed to fill the full viewport in portrait orientation.
+   *
+   * Usage: room.html?room=001
+   */
+  :root {
+    --color-brand-70: #E77500;
+    --color-brand-80: #C1560E;
+    --color-brand-10: #FFF7F2;
+    --color-neutral-5: #f7f7f7;
+    --color-neutral-10: #eeeeee;
+    --color-neutral-20: #D9D9D9;
+    --color-neutral-40: #a0a0a0;
+    --color-neutral-60: #717171;
+    --color-neutral-85: #333;
+    --color-neutral-100: #121212;
+    --color-white: #fff;
+    --color-black: #000;
+    --font-display: Montserrat, sans-serif;
+    --font-body: Roboto, sans-serif;
+    --break-bg: rgb(255, 240, 200);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    background: var(--color-white);
+    color: var(--color-neutral-100);
+    font-family: var(--font-body);
+    overflow: hidden;
+  }
+
+  .display-frame {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ──────────────────────────────────────────────────── */
+  .room-header {
+    flex-shrink: 0;
+    background: var(--color-neutral-85);
+    border-bottom: 0.4vh solid var(--color-brand-70);
+    padding: 2.5vh 5vw 2vh;
+    display: flex;
+    align-items: flex-start;
+    gap: 4vw;
+  }
+
+  .room-header-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .room-header .site-slogan {
+    font-family: var(--font-display);
+    font-size: 2.8vw;
+    font-weight: 300;
+    color: var(--color-white);
+    opacity: 0.75;
+    margin-bottom: 1vh;
+  }
+
+  .room-header .room-title {
+    font-family: var(--font-display);
+    font-size: 6.5vw;
+    font-weight: 700;
+    color: var(--color-white);
+    line-height: 1.1;
+    padding-bottom: 1vh;
+    border-bottom: 0.4vh solid var(--color-brand-70);
+    display: inline-block;
+  }
+
+  .room-header .room-meta {
+    margin-top: 1.5vh;
+    font-size: 2.6vw;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.75);
+  }
+
+  .room-header .room-meta .meta-label {
+    font-weight: 700;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    font-size: 2vw;
+    letter-spacing: 0.04em;
+  }
+
+  .room-header .room-qr {
+    flex-shrink: 0;
+    width: 14vw;
+    height: 14vw;
+    border-radius: 0.4vw;
+    background: var(--color-white);
+    padding: 0.5vw;
+    margin-top: 0.5vh;
+  }
+
+  /* ── Schedule list ───────────────────────────────────────────── */
+  .schedule-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    background: var(--color-neutral-5);
+    padding: 1vh 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .schedule-entry {
+    display: flex;
+    align-items: baseline;
+    gap: 4vw;
+    padding: 1.2vh 5vw;
+    border-bottom: 1px solid var(--color-neutral-20);
+  }
+
+  .schedule-entry:last-child { border-bottom: none; }
+
+  .schedule-entry.is-break {
+    background: var(--break-bg);
+  }
+
+  .entry-time {
+    font-family: var(--font-body);
+    font-size: 3.8vw;
+    font-weight: 400;
+    color: var(--color-neutral-60);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.35;
+    min-width: 22vw;
+  }
+
+  .entry-name {
+    font-family: var(--font-display);
+    font-size: 4.5vw;
+    font-weight: 700;
+    color: var(--color-black);
+    line-height: 1.35;
+  }
+
+  .schedule-entry.is-break .entry-name {
+    font-weight: 700;
+    font-size: 3.8vw;
+  }
+
+  .schedule-entry.is-current {
+    background: var(--color-brand-10);
+    border-left: 0.6vw solid var(--color-brand-70);
+    padding-left: calc(5vw - 0.6vw);
+  }
+
+  .schedule-entry.is-current .entry-time {
+    color: var(--color-brand-80);
+    font-weight: 500;
+  }
+
+  /* ── Footer ──────────────────────────────────────────────────── */
+  .room-footer {
+    flex-shrink: 0;
+    height: 5.5vh;
+    background: var(--color-neutral-85);
+    border-top: 0.3vh solid var(--color-brand-70);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5vw;
+  }
+
+  .room-footer .pu-logo {
+    height: 2vw;
+    min-height: 12px;
+    width: auto;
+    opacity: 0.7;
+  }
+
+  .room-footer .footer-cta {
+    font-family: var(--font-display);
+    font-size: 2vw;
+    font-weight: 400;
+    color: rgba(255,255,255,0.65);
+  }
+
+  /* ── Loading / error ─────────────────────────────────────────── */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    background: var(--color-neutral-5);
+  }
+
+  .loading-text {
+    font-family: var(--font-display);
+    font-size: 4vw;
+    color: var(--color-neutral-40);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  .error-msg {
+    text-align: center;
+    padding: 10vw;
+    font-family: var(--font-display);
+    font-size: 3.5vw;
+    color: #c0392b;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="loading"><span class="loading-text">Loading schedule...</span></div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const SYMPOSIUM_URL = 'https://symposium.orfe.princeton.edu';
+  const QR_API = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=';
+
+  const ON_GITHUB_PAGES = location.hostname.endsWith('.github.io');
+  const ON_PRINCETON = location.hostname.endsWith('princeton.edu');
+  const DATA_MODE = ON_GITHUB_PAGES ? 'json' : ON_PRINCETON ? 'html' : 'proxy';
+  const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+
+  const params = new URLSearchParams(window.location.search);
+  const roomParam = params.get('room');
+  const highlightCurrent = params.get('highlight') !== 'false';
+
+  if (!roomParam) {
+    document.getElementById('app').innerHTML =
+      '<div class="error-msg">No room specified. Use <strong>?room=001</strong></div>';
+    return;
+  }
+
+  function roomQrUrl(roomNum) {
+    return QR_API + encodeURIComponent(SYMPOSIUM_URL + '#_' + roomNum + '---Sherrerd-Hall');
+  }
+
+  // ── Parse JSON ─────────────────────────────────────────────────
+  function parseJSON(data) {
+    const ADVISOR_LABELS = ['ORFE Advisors:', 'ORFE Advisers:'];
+    const GRADER_LABELS = ['PhD Candidate Graders:', 'PhD Candidates / Graduate Students:'];
+    const d = data[roomParam];
+    if (!d) return null;
+
+    let advisers = d.advisors || '';
+    ADVISOR_LABELS.forEach(l => { advisers = advisers.replace(l, '').trim(); });
+    let phdCandidates = d.graders || '';
+    GRADER_LABELS.forEach(l => { phdCandidates = phdCandidates.replace(l, '').trim(); });
+
+    const entries = (d.schedule || []).map(pair => {
+      const timeRange = pair[0] || '';
+      const name = pair[1] || '';
+      const startTime = timeRange.split(/\s*[\u2013\u2014-]+\s*/)[0].trim();
+      const endTime = (timeRange.split(/\s*[\u2013\u2014-]+\s*/)[1] || '').trim();
+      return { startTime, endTime, name, isBreak: /break|photo|lunch/i.test(name) };
+    });
+
+    return { roomNum: roomParam, advisers, phdCandidates, entries };
+  }
+
+  // ── Parse HTML ─────────────────────────────────────────────────
+  function parseHTML(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const blocks = doc.querySelectorAll('.block-ps-events-list-conference');
+
+    for (const block of blocks) {
+      const heading = block.querySelector('.block-heading');
+      if (!heading) continue;
+      const num = heading.textContent.trim().split(/\s*-\s*/)[0].trim();
+      if (num !== roomParam) continue;
+
+      const summaryEl = block.querySelector('.block-description-summary');
+      let advisers = '', phdCandidates = '';
+      if (summaryEl) {
+        summaryEl.querySelectorAll('li').forEach(li => {
+          const text = li.textContent.trim();
+          if (text.startsWith('ORFE Adviser'))
+            advisers = text.replace(/^ORFE Advisers?:\s*/, '');
+          else if (text.startsWith('PhD Candidate') || text.startsWith('Graduate Student'))
+            phdCandidates = text.replace(/^PhD Candidates?\s*\/?\s*Graduate Students?:\s*/, '');
+        });
+      }
+
+      const entries = [];
+      block.querySelectorAll('.events-list-conference-item').forEach(item => {
+        const timeEl = item.querySelector('.field--name-field-ps-events-date');
+        const nameEl = item.querySelector('.field--name-title');
+        if (!timeEl || !nameEl) return;
+        const times = timeEl.querySelectorAll('.time');
+        const startTime = times[0] ? times[0].textContent.trim() : '';
+        const endTime = times[1] ? times[1].textContent.trim() : '';
+        const name = nameEl.textContent.trim();
+        entries.push({ startTime, endTime, name, isBreak: /break|photo|lunch/i.test(name) });
+      });
+
+      return { roomNum: roomParam, advisers, phdCandidates, entries };
+    }
+    return null;
+  }
+
+  // ── Current-talk detection ─────────────────────────────────────
+  function isCurrent(startTime, endTime) {
+    if (!highlightCurrent) return false;
+    const now = new Date(), today = now.toDateString();
+    function parseTime(str) {
+      const m = str.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+      if (!m) return null;
+      let h = parseInt(m[1]); const min = parseInt(m[2]), ap = m[3].toLowerCase();
+      if (ap === 'pm' && h !== 12) h += 12;
+      if (ap === 'am' && h === 12) h = 0;
+      const d = new Date(today); d.setHours(h, min, 0, 0); return d;
+    }
+    const s = parseTime(startTime), e = parseTime(endTime);
+    return s && e && now >= s && now < e;
+  }
+
+  // ── Render ─────────────────────────────────────────────────────
+  function render(room) {
+    const app = document.getElementById('app');
+
+    let metaHtml = '';
+    if (room.advisers)
+      metaHtml += `<div><span class="meta-label">Advisers: </span>${esc(room.advisers)}</div>`;
+    if (room.phdCandidates && room.phdCandidates !== 'TBD')
+      metaHtml += `<div><span class="meta-label">PhD Candidates: </span>${esc(room.phdCandidates)}</div>`;
+
+    let entriesHtml = '';
+    room.entries.forEach(entry => {
+      const cls = ['schedule-entry'];
+      if (entry.isBreak) cls.push('is-break');
+      if (isCurrent(entry.startTime, entry.endTime)) cls.push('is-current');
+      entriesHtml += `<div class="${cls.join(' ')}">
+        <span class="entry-time">${esc(entry.startTime)}</span>
+        <span class="entry-name">${esc(entry.name)}</span>
+      </div>`;
+    });
+
+    app.innerHTML = `
+      <div class="display-frame">
+        <div class="room-header">
+          <div class="room-header-text">
+            <div class="site-slogan">Senior Thesis Symposium</div>
+            <div class="room-title">Room ${esc(room.roomNum)} <span style="font-weight:300;font-size:0.6em;opacity:0.7">Sherrerd Hall</span></div>
+            <div class="room-meta">${metaHtml}</div>
+          </div>
+          <img class="room-qr" src="${roomQrUrl(room.roomNum)}" alt="QR: Room ${esc(room.roomNum)}">
+        </div>
+        <div class="schedule-body">${entriesHtml}</div>
+        <div class="room-footer">
+          <img class="pu-logo"
+               src="https://symposium.orfe.princeton.edu/profiles/ps/themes/ps_base/images/pu-logo.svg"
+               alt="Princeton University">
+          <div class="footer-cta">symposium.orfe.princeton.edu</div>
+        </div>
+      </div>`;
+  }
+
+  function esc(str) {
+    const el = document.createElement('span');
+    el.textContent = str;
+    return el.innerHTML;
+  }
+
+  // ── Fetch & display ────────────────────────────────────────────
+  async function loadSchedule() {
+    try {
+      let room;
+      if (DATA_MODE === 'json') {
+        const resp = await fetch('symposium_schedule.json', { cache: 'no-cache' });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        room = parseJSON(await resp.json());
+      } else {
+        const url = DATA_MODE === 'html' ? SYMPOSIUM_URL : '/proxy/schedule';
+        const headers = DATA_MODE === 'html' ? { 'x-wdsoit-bot-bypass': 'true' } : {};
+        const resp = await fetch(url, { headers });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        room = parseHTML(await resp.text());
+      }
+
+      if (!room) {
+        document.getElementById('app').innerHTML =
+          `<div class="error-msg">Room ${esc(roomParam)} not found in schedule data.</div>`;
+        return;
+      }
+      render(room);
+    } catch (err) {
+      console.error('Failed to load schedule:', err);
+      document.getElementById('app').innerHTML =
+        `<div class="error-msg">Failed to load schedule: ${esc(err.message)}</div>`;
+    }
+  }
+
+  loadSchedule();
+  setInterval(loadSchedule, REFRESH_INTERVAL_MS);
+})();
+</script>
+</body>
+</html>

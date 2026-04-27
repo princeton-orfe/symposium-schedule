@@ -1,0 +1,288 @@
+/*
+ * ORFE Symposium — Single-Room Portrait CSS Override
+ * For OBS Studio Browser Source on the live symposium site.
+ *
+ * URL:  https://symposium.orfe.princeton.edu
+ * Resolution: set OBS browser source to portrait (e.g. 1668×2388)
+ *
+ * STEP 1: Paste this entire file into the OBS Browser Source "Custom CSS" field.
+ * STEP 2: Uncomment ONE room line below to show that room.
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+   UNCOMMENT ONE LINE for the room this display should show:
+   ═══════════════════════════════════════════════════════════════ */
+
+/* [data-component-uuid="cd8dc15d-e080-4765-9ffe-8d4a417ca4ff"] { display: block !important; } /* Room 001 */
+/* [data-component-uuid="0aa5df0b-ca28-416d-a9e9-d3239d21432e"] { display: block !important; } /* Room 003 */
+/* [data-component-uuid="b9da8870-23a3-4d38-8e49-0fba5ab8b5a8"] { display: block !important; } /* Room 008 */
+/* [data-component-uuid="4075db57-2f24-407d-8476-cbd40d03f243"] { display: block !important; } /* Room 101 */
+/* [data-component-uuid="0a0aed8b-71f1-46ea-81ea-9e6a0e986e41"] { display: block !important; } /* Room 107 */
+/* [data-component-uuid="f35bc936-28fc-4ca8-8bf4-3b48ad164977"] { display: block !important; } /* Room 110 */
+/* [data-component-uuid="c56fc0c5-c985-4ea4-904f-fcb787524835"] { display: block !important; } /* Room 123 */
+/* [data-component-uuid="d7f3f8b3-e532-49d6-a930-5c115243531c"] { display: block !important; } /* Room 125 */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   1. HIDE ALL PAGE CHROME
+   ═══════════════════════════════════════════════════════════════ */
+
+header#header,
+.header,
+footer#footer,
+.footer,
+.subfooter,
+.search-bar,
+.skip-links,
+.back-to-top,
+.jump-link-menu,
+.page-title,
+#block-ps-tiger-page-title,
+.highlighted,
+#highlighted,
+.region-highlighted,
+[data-drupal-messages-fallback],
+#ps-current-username {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   2. DISABLE LINKS / INTERACTIVITY
+   ═══════════════════════════════════════════════════════════════ */
+
+a, button, input, select, textarea {
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+a {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   3. HIDE THESIS TITLES
+   ═══════════════════════════════════════════════════════════════ */
+
+.field--name-field-ps-events-subtitle {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   4. PAGE-LEVEL LAYOUT — portrait, fills viewport
+   ═══════════════════════════════════════════════════════════════ */
+
+html {
+  overflow: hidden !important;
+}
+
+body {
+  background: #f7f7f7 !important;
+  color: #121212 !important;
+  font-family: 'Libre Franklin', -apple-system, sans-serif !important;
+  overflow: hidden !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.page-container,
+.page,
+.dialog-off-canvas-main-canvas {
+  background: #f7f7f7 !important;
+  max-width: none !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.main-container,
+.main-container > .container,
+.main-container > .container > .row,
+.main-container > .container > .row > .main {
+  max-width: none !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.region-content {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+.container {
+  max-width: none !important;
+  width: 100% !important;
+  padding: 0 !important;
+}
+
+.row { margin: 0 !important; }
+.col-md-12 { padding: 0 !important; }
+
+article.node { padding: 0 !important; margin: 0 !important; }
+
+.node__content {
+  display: block !important;
+  padding: 0 !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+/* Flatten layout wrappers */
+.node__content > .constrained-bkg-constrained-content.layout--onecol {
+  display: contents !important;
+}
+
+.node__content > .constrained-bkg-constrained-content.layout--onecol > .layout-container {
+  display: contents !important;
+}
+
+.node__content > .constrained-bkg-constrained-content.layout--onecol > .layout-container > .layout__region--content {
+  display: contents !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   5. HIDE ALL ROOM BLOCKS BY DEFAULT
+   ═══════════════════════════════════════════════════════════════ */
+
+.block-ps-events-list-conference {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   6. PORTRAIT ROOM LAYOUT (for the one visible room)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* The active room (un-hidden above) fills the viewport */
+.block-ps-events-list-conference[style],
+.block-ps-events-list-conference:not([style]) {
+  /* Only the uncommented room above gets display: block */
+}
+
+.block-ps-events-list-conference[data-component-uuid] {
+  /* When shown via the uncomment above: */
+  flex-direction: column !important;
+  height: 100vh !important;
+  width: 100vw !important;
+  overflow: hidden !important;
+  background: #f7f7f7 !important;
+}
+
+/* Room heading — large, with orange underline */
+.block-ps-events-list-conference > h2.block-heading {
+  background: #333 !important;
+  color: #fff !important;
+  font-family: Montserrat, sans-serif !important;
+  font-size: 7vw !important;
+  font-weight: 700 !important;
+  padding: 3vh 5vw 2.5vh !important;
+  margin: 0 !important;
+  border-bottom: 0.5vh solid #E77500 !important;
+  line-height: 1.15 !important;
+}
+
+/* Adviser/grader summary */
+.block-description-summary {
+  background: #333 !important;
+  padding: 0 5vw 2.5vh !important;
+  border-bottom: none !important;
+}
+
+.block-description-summary ul {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.block-description-summary li {
+  font-size: 2.8vw !important;
+  line-height: 1.5 !important;
+  color: rgba(255,255,255,0.75) !important;
+  margin-bottom: 0.3vh !important;
+}
+
+.block-description-summary li:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Schedule entries — fill remaining height evenly */
+.events-list-conference,
+.events-list-conference-items-outer,
+.events-list-conference-items-inner {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-evenly !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+}
+
+.events-list-conference-item {
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 4vw !important;
+  padding: 1.2vh 5vw !important;
+  border-bottom: 1px solid #D9D9D9 !important;
+}
+
+.events-list-conference-item:last-child {
+  border-bottom: none !important;
+}
+
+/* Time sidebar */
+.events-list-conference-item-sidebar {
+  width: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: none !important;
+  float: none !important;
+  flex-shrink: 0 !important;
+}
+
+.events-list-conference-item-sidebar .field--name-field-ps-events-date {
+  font-size: 4vw !important;
+  font-weight: 400 !important;
+  color: #717171 !important;
+  white-space: nowrap !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* Hide end time for compactness */
+.events-list-conference-item-sidebar .date-range-separator,
+.events-list-conference-item-sidebar .time:last-child {
+  display: none !important;
+}
+
+/* Presenter name */
+.events-list-conference-item-details {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.events-list-conference-item-details .field--name-title {
+  font-family: Montserrat, sans-serif !important;
+  font-size: 4.8vw !important;
+  font-weight: 700 !important;
+  color: #000 !important;
+  line-height: 1.3 !important;
+}
+
+/* Break row highlight */
+.events-list-conference-item:has(.field--name-title a[href*="break"]) {
+  background: rgb(255, 240, 200) !important;
+}
+
+.events-list-conference-item-details .field--name-title a[href*="break"] {
+  font-size: 4vw !important;
+}
+
+/* Hide exposed filters */
+.exposed-filters-0 > *:not(.events-list-conference-items-outer) {
+  display: none !important;
+}
