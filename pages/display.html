@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORFE Senior Thesis Symposium — Public Display</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  /*
+   * Public display page for the ORFE Senior Thesis Symposium.
+   * Design aligned with symposium.orfe.princeton.edu (ps_tiger fontset1).
+   *
+   * Layout strategy:
+   *   - All sizing uses vw so the page scales identically on 1080p and 4K.
+   *   - min-width: 1920px keeps content at 1080p-equivalent proportions on
+   *     smaller screens (laptops) and enables horizontal scrolling.
+   *   - body overflow is auto so developers can scroll; on a display TV the
+   *     content fills exactly one viewport and no scrollbar appears.
+   *
+   * Data source:
+   *   - On GitHub Pages: fetches symposium_schedule.json (same origin, updated
+   *     every 20 min by the generate workflow).
+   *   - On princeton.edu: fetches the live HTML directly.
+   *   - Elsewhere (localhost dev): fetches from /proxy/schedule (see serve.py).
+   */
+  :root {
+    --color-brand-70: #E77500;
+    --color-brand-80: #C1560E;
+    --color-brand-10: #FFF7F2;
+    --color-neutral-5: #f7f7f7;
+    --color-neutral-10: #eeeeee;
+    --color-neutral-20: #D9D9D9;
+    --color-neutral-40: #a0a0a0;
+    --color-neutral-60: #717171;
+    --color-neutral-85: #333;
+    --color-neutral-100: #121212;
+    --color-white: #fff;
+    --color-black: #000;
+    --font-display: Montserrat, sans-serif;
+    --font-body: Roboto, sans-serif;
+    --break-bg: rgb(255, 240, 200);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background: var(--color-white);
+    color: var(--color-neutral-100);
+    font-family: var(--font-body);
+    width: 100vw;
+    min-width: 1920px;
+    height: 100vh;
+    min-height: 1080px;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header bar ──────────────────────────────────────────────── */
+  .display-header {
+    flex-shrink: 0;
+    height: 5.1vh;
+    min-height: 55px;
+    background: var(--color-neutral-85);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.25vw;
+    border-bottom: 0.26vw solid var(--color-brand-70);
+  }
+
+  .display-header .title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.73vw;
+  }
+
+  .display-header .site-logo {
+    height: 3.2vw;
+    min-height: 32px;
+    width: auto;
+  }
+
+  .display-header h1 {
+    font-family: var(--font-display);
+    font-size: 1.67vw;
+    font-weight: 700;
+    color: var(--color-white);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  .display-header .site-slogan {
+    font-family: var(--font-display);
+    font-size: 1.25vw;
+    font-weight: 300;
+    color: var(--color-white);
+    opacity: 0.85;
+  }
+
+  .display-header .floor-label {
+    font-family: var(--font-display);
+    font-size: 1.15vw;
+    font-weight: 600;
+    color: var(--color-white);
+    background: rgba(255,255,255,0.12);
+    padding: 0.46vh 1.46vw;
+    border-radius: 0.1vw;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  /* ── Room columns grid ───────────────────────────────────────── */
+  .rooms-grid {
+    flex: 1;
+    display: grid;
+    padding: 1.11vh 0.83vw 0.74vh;
+    gap: 0.625vw;
+    overflow: hidden;
+    background: var(--color-neutral-5);
+    min-height: 0;
+  }
+
+  .rooms-grid.cols-1 { grid-template-columns: 1fr; }
+  .rooms-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .rooms-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .rooms-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .rooms-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+  .rooms-grid.cols-6 { grid-template-columns: repeat(6, 1fr); }
+  .rooms-grid.cols-7 { grid-template-columns: repeat(7, 1fr); }
+  .rooms-grid.cols-8 { grid-template-columns: repeat(8, 1fr); }
+
+  /* ── Room card ───────────────────────────────────────────────── */
+  .room-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-neutral-20);
+    border-radius: 0.05vw;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    min-height: 0;
+  }
+
+  .room-card-header {
+    padding: 0.83vh 1.15vw 0.74vh;
+    border-bottom: 1px solid var(--color-neutral-10);
+    flex-shrink: 0;
+  }
+
+  .room-number {
+    font-family: var(--font-display);
+    font-size: 1.67vw;
+    font-weight: 700;
+    color: var(--color-neutral-100);
+    line-height: 1.15;
+    padding-bottom: 0.37vh;
+    border-bottom: 0.16vw solid var(--color-brand-70);
+    display: inline-block;
+  }
+
+  .room-meta {
+    margin-top: 0.56vh;
+    font-size: 0.78vw;
+    line-height: 1.4;
+    color: var(--color-neutral-60);
+  }
+
+  .room-meta .meta-line { margin-bottom: 0.14vh; }
+  .room-meta .meta-line:last-child { margin-bottom: 0; }
+
+  .room-meta .meta-label {
+    font-weight: 700;
+    color: var(--color-neutral-85);
+    text-transform: uppercase;
+    font-size: 0.68vw;
+    letter-spacing: 0.03em;
+  }
+
+  .room-meta .meta-value {
+    font-weight: 400;
+    color: var(--color-neutral-60);
+  }
+
+  /* ── Schedule list ───────────────────────────────────────────── */
+  .schedule-list {
+    flex: 1;
+    overflow: hidden;
+    padding: 0.19vh 0;
+    min-height: 0;
+  }
+
+  .schedule-entry {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.83vw;
+    padding: 0.46vh 1.15vw;
+    align-items: baseline;
+    border-bottom: 1px solid var(--color-neutral-10);
+  }
+
+  .schedule-entry:last-child { border-bottom: none; }
+
+  .schedule-entry.is-break { background: var(--break-bg); }
+
+  .entry-time {
+    font-family: var(--font-body);
+    font-size: 1.04vw;
+    font-weight: 400;
+    color: var(--color-neutral-60);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+    min-width: 4.69vw;
+  }
+
+  .entry-name {
+    font-family: var(--font-display);
+    font-size: 1.15vw;
+    font-weight: 700;
+    color: var(--color-black);
+    line-height: 1.3;
+  }
+
+  .schedule-entry.is-break .entry-name { font-weight: 700; font-size: 1.04vw; }
+
+  .schedule-entry.is-current {
+    background: var(--color-brand-10);
+    border-left: 0.21vw solid var(--color-brand-70);
+    padding-left: 0.94vw;
+  }
+
+  .schedule-entry.is-current .entry-time { color: var(--color-brand-80); font-weight: 500; }
+
+  /* ── Adaptive sizing by column count ─────────────────────────── */
+  .rooms-grid.cols-3 .room-number { font-size: 1.98vw; }
+  .rooms-grid.cols-3 .room-meta { font-size: 0.89vw; }
+  .rooms-grid.cols-3 .room-meta .meta-label { font-size: 0.73vw; }
+  .rooms-grid.cols-3 .entry-time { font-size: 1.25vw; min-width: 5.73vw; }
+  .rooms-grid.cols-3 .entry-name { font-size: 1.46vw; }
+  .rooms-grid.cols-3 .schedule-entry { padding: 0.65vh 1.35vw; gap: 1.04vw; }
+  .rooms-grid.cols-3 .schedule-entry.is-break .entry-name { font-size: 1.25vw; }
+  .rooms-grid.cols-3 .room-card-header { padding: 1.02vh 1.35vw 0.83vh; }
+
+  .rooms-grid.cols-4 .room-number { font-size: 1.67vw; }
+  .rooms-grid.cols-4 .entry-time { font-size: 1.09vw; min-width: 5vw; }
+  .rooms-grid.cols-4 .entry-name { font-size: 1.25vw; }
+  .rooms-grid.cols-4 .schedule-entry { padding: 0.51vh 1.04vw; gap: 0.83vw; }
+
+  .rooms-grid.cols-5 .room-number { font-size: 1.46vw; }
+  .rooms-grid.cols-5 .room-meta { font-size: 0.7vw; }
+  .rooms-grid.cols-5 .room-meta .meta-label { font-size: 0.6vw; }
+  .rooms-grid.cols-5 .entry-time { font-size: 0.89vw; min-width: 4.06vw; }
+  .rooms-grid.cols-5 .entry-name { font-size: 0.99vw; }
+  .rooms-grid.cols-5 .schedule-entry { padding: 0.37vh 0.83vw; gap: 0.625vw; }
+  .rooms-grid.cols-5 .schedule-entry.is-break .entry-name { font-size: 0.89vw; }
+  .rooms-grid.cols-5 .room-card-header { padding: 0.65vh 0.83vw 0.56vh; }
+
+  .rooms-grid.cols-6 .room-number, .rooms-grid.cols-7 .room-number { font-size: 1.35vw; }
+  .rooms-grid.cols-6 .room-meta, .rooms-grid.cols-7 .room-meta { font-size: 0.65vw; }
+  .rooms-grid.cols-6 .room-meta .meta-label, .rooms-grid.cols-7 .room-meta .meta-label { font-size: 0.55vw; }
+  .rooms-grid.cols-6 .entry-time, .rooms-grid.cols-7 .entry-time { font-size: 0.78vw; min-width: 3.44vw; }
+  .rooms-grid.cols-6 .entry-name, .rooms-grid.cols-7 .entry-name { font-size: 0.89vw; }
+  .rooms-grid.cols-6 .schedule-entry, .rooms-grid.cols-7 .schedule-entry { padding: 0.32vh 0.625vw; gap: 0.52vw; }
+  .rooms-grid.cols-6 .schedule-entry.is-break .entry-name, .rooms-grid.cols-7 .schedule-entry.is-break .entry-name { font-size: 0.78vw; }
+  .rooms-grid.cols-6 .room-card-header, .rooms-grid.cols-7 .room-card-header { padding: 0.56vh 0.625vw 0.46vh; }
+  .rooms-grid.cols-6, .rooms-grid.cols-7 { gap: 0.42vw; }
+
+  .rooms-grid.cols-8 .room-number { font-size: 1.15vw; padding-bottom: 0.23vh; border-bottom-width: 0.1vw; }
+  .rooms-grid.cols-8 .room-meta { font-size: 0.6vw; margin-top: 0.37vh; }
+  .rooms-grid.cols-8 .room-meta .meta-label { font-size: 0.52vw; }
+  .rooms-grid.cols-8 .entry-time { font-size: 0.68vw; min-width: 2.92vw; }
+  .rooms-grid.cols-8 .entry-name { font-size: 0.78vw; }
+  .rooms-grid.cols-8 .schedule-entry { padding: 0.23vh 0.52vw; gap: 0.31vw; }
+  .rooms-grid.cols-8 .schedule-entry.is-break .entry-name { font-size: 0.68vw; }
+  .rooms-grid.cols-8 .room-card-header { padding: 0.46vh 0.52vw 0.37vh; }
+  .rooms-grid.cols-8 { gap: 0.31vw; }
+
+  /* ── Footer ──────────────────────────────────────────────────── */
+  .display-footer {
+    flex-shrink: 0;
+    height: 4.63vh;
+    min-height: 50px;
+    background: var(--color-neutral-85);
+    border-top: 0.16vw solid var(--color-brand-70);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.25vw;
+    gap: 1.04vw;
+  }
+
+  .display-footer .footer-left { display: flex; align-items: center; }
+
+  .display-footer .pu-logo {
+    height: 1.8vw;
+    min-height: 18px;
+    width: auto;
+    opacity: 0.85;
+  }
+
+  .display-footer .footer-right { display: flex; align-items: center; gap: 1.04vw; }
+
+  .display-footer .footer-cta {
+    font-family: var(--font-display);
+    font-size: 1.04vw;
+    font-weight: 500;
+    color: var(--color-white);
+    text-align: right;
+    line-height: 1.3;
+  }
+
+  .display-footer .footer-cta .footer-url {
+    font-weight: 300;
+    font-size: 0.78vw;
+    opacity: 0.7;
+    display: block;
+    margin-top: 0.1em;
+  }
+
+  .display-footer .qr-code {
+    height: 3.7vh;
+    min-height: 40px;
+    width: auto;
+    border-radius: 0.1vw;
+    background: var(--color-white);
+    padding: 0.19vh;
+  }
+
+  /* ── Loading / error ─────────────────────────────────────────── */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    background: var(--color-neutral-5);
+  }
+
+  .loading-text {
+    font-family: var(--font-display);
+    font-size: 1.88vw;
+    color: var(--color-neutral-40);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  .error-msg {
+    text-align: center;
+    padding: 4.17vw;
+    font-family: var(--font-display);
+    font-size: 1.46vw;
+    color: #c0392b;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="loading"><span class="loading-text">Loading schedule...</span></div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── Configuration ──────────────────────────────────────────────
+  const SYMPOSIUM_URL = 'https://symposium.orfe.princeton.edu';
+  const QR_IMG_URL = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='
+    + encodeURIComponent(SYMPOSIUM_URL);
+
+  // Determine data source based on hosting environment:
+  //   - GitHub Pages (*.github.io): fetch the co-deployed JSON
+  //   - princeton.edu: fetch live HTML directly
+  //   - localhost dev: fetch from /proxy/schedule (see serve.py)
+  const ON_GITHUB_PAGES = location.hostname.endsWith('.github.io');
+  const ON_PRINCETON = location.hostname.endsWith('princeton.edu');
+
+  const DATA_MODE = ON_GITHUB_PAGES ? 'json'
+                  : ON_PRINCETON    ? 'html'
+                  :                   'proxy';
+
+  const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+
+  const FLOOR_MAP = {
+    '001': 'ground', '003': 'ground', '008': 'ground',
+    '101': '1', '107': '1', '110': '1', '122': '1', '123': '1', '125': '1'
+  };
+
+  const FLOOR_LABELS = {
+    'ground': 'Ground Floor \u2014 Sherrerd Hall',
+    '0':      'Ground Floor \u2014 Sherrerd Hall',
+    '1':      '1st Floor \u2014 Sherrerd Hall',
+    'all':    'All Rooms \u2014 Sherrerd Hall'
+  };
+
+  // ── Query params ───────────────────────────────────────────────
+  const params = new URLSearchParams(window.location.search);
+  const floorParam = params.get('floor');
+  const roomsParam = params.get('rooms');
+  const highlightCurrent = params.get('highlight') !== 'false';
+
+  function shouldShowRoom(roomNum) {
+    if (roomsParam) return roomsParam.split(',').map(s => s.trim()).includes(roomNum);
+    if (floorParam === 'all' || (!floorParam && !roomsParam)) return true;
+    const normalizedFloor = (floorParam === '0') ? 'ground' : floorParam;
+    return FLOOR_MAP[roomNum] === normalizedFloor;
+  }
+
+  function getFloorLabel() {
+    if (roomsParam) {
+      const rooms = roomsParam.split(',').map(s => s.trim());
+      return rooms.length === 1 ? 'Room ' + rooms[0] : 'Rooms ' + rooms.join(', ');
+    }
+    return FLOOR_LABELS[floorParam || 'all'] || FLOOR_LABELS['all'];
+  }
+
+  // ── Parse JSON (from generate workflow) ────────────────────────
+  // JSON shape: { "001": { "advisors": "...", "graders": "...",
+  //               "schedule": [["9:00 am \u2013 9:15 am", "Name"], ...] }, ... }
+  function parseJSON(data) {
+    const rooms = [];
+    const ADVISOR_LABELS = ['ORFE Advisors:', 'ORFE Advisers:'];
+    const GRADER_LABELS = ['PhD Candidate Graders:', 'PhD Candidates / Graduate Students:'];
+
+    Object.keys(data).sort().forEach(roomNum => {
+      if (!shouldShowRoom(roomNum)) return;
+
+      const d = data[roomNum];
+
+      // Strip label prefixes from advisors/graders strings
+      let advisers = d.advisors || '';
+      ADVISOR_LABELS.forEach(l => { advisers = advisers.replace(l, '').trim(); });
+
+      let phdCandidates = d.graders || '';
+      GRADER_LABELS.forEach(l => { phdCandidates = phdCandidates.replace(l, '').trim(); });
+
+      const entries = (d.schedule || []).map(pair => {
+        const timeRange = pair[0] || '';
+        const name = pair[1] || '';
+        const startTime = timeRange.split(/\s*[\u2013\u2014-]+\s*/)[0].trim();
+        const endTime = (timeRange.split(/\s*[\u2013\u2014-]+\s*/)[1] || '').trim();
+        const isBreak = /break|photo|lunch/i.test(name);
+        return { startTime, endTime, name, isBreak };
+      });
+
+      rooms.push({
+        roomNum,
+        fullName: roomNum + ' - Sherrerd Hall',
+        advisers,
+        phdCandidates,
+        entries
+      });
+    });
+
+    return rooms;
+  }
+
+  // ── Parse HTML (when on princeton.edu or via proxy) ──���─────────
+  function parseHTML(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const blocks = doc.querySelectorAll('.block-ps-events-list-conference');
+    const rooms = [];
+
+    blocks.forEach(block => {
+      const heading = block.querySelector('.block-heading');
+      if (!heading) return;
+
+      const fullName = heading.textContent.trim();
+      const roomNum = fullName.split(/\s*-\s*/)[0].trim();
+      if (!shouldShowRoom(roomNum)) return;
+
+      const summaryEl = block.querySelector('.block-description-summary');
+      let advisers = '', phdCandidates = '';
+      if (summaryEl) {
+        summaryEl.querySelectorAll('li').forEach(li => {
+          const text = li.textContent.trim();
+          if (text.startsWith('ORFE Adviser'))
+            advisers = text.replace(/^ORFE Advisers?:\s*/, '');
+          else if (text.startsWith('PhD Candidate') || text.startsWith('Graduate Student'))
+            phdCandidates = text.replace(/^PhD Candidates?\s*\/?\s*Graduate Students?:\s*/, '');
+        });
+      }
+
+      const entries = [];
+      block.querySelectorAll('.events-list-conference-item').forEach(item => {
+        const timeEl = item.querySelector('.field--name-field-ps-events-date');
+        const nameEl = item.querySelector('.field--name-title');
+        if (!timeEl || !nameEl) return;
+        const times = timeEl.querySelectorAll('.time');
+        const startTime = times[0] ? times[0].textContent.trim() : '';
+        const endTime = times[1] ? times[1].textContent.trim() : '';
+        const name = nameEl.textContent.trim();
+        entries.push({ startTime, endTime, name, isBreak: /break|photo|lunch/i.test(name) });
+      });
+
+      rooms.push({ roomNum, fullName, advisers, phdCandidates, entries });
+    });
+    return rooms;
+  }
+
+  // ── Current-talk detection ─────────────────────────────────────
+  function isCurrent(startTime, endTime) {
+    if (!highlightCurrent) return false;
+    const now = new Date();
+    const today = now.toDateString();
+    function parseTime(str) {
+      const m = str.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+      if (!m) return null;
+      let h = parseInt(m[1]);
+      const min = parseInt(m[2]);
+      const ap = m[3].toLowerCase();
+      if (ap === 'pm' && h !== 12) h += 12;
+      if (ap === 'am' && h === 12) h = 0;
+      const d = new Date(today);
+      d.setHours(h, min, 0, 0);
+      return d;
+    }
+    const s = parseTime(startTime), e = parseTime(endTime);
+    return s && e && now >= s && now < e;
+  }
+
+  // ── Render ─────────────────────────────────────────────────────
+  function render(rooms) {
+    const app = document.getElementById('app');
+    const colCount = Math.min(rooms.length, 8);
+
+    let html = `
+      <div class="display-header">
+        <div class="title-group">
+          <img class="site-logo"
+               src="https://symposium.orfe.princeton.edu/sites/g/files/toruqf7686/files/Operations%20Research%20%26%20Financial%20Engineering%20Logo%20in%20Orange_0.png"
+               alt="ORFE">
+          <div>
+            <h1>Operations Research &amp; Financial Engineering</h1>
+            <div class="site-slogan">Senior Thesis Symposium</div>
+          </div>
+        </div>
+        <div class="floor-label">${getFloorLabel()}</div>
+      </div>
+      <div class="rooms-grid cols-${colCount}">`;
+
+    rooms.forEach(room => {
+      html += `<div class="room-card"><div class="room-card-header">`;
+      html += `<div class="room-number">${esc(room.fullName)}</div>`;
+      html += `<div class="room-meta">`;
+      if (room.advisers)
+        html += `<div class="meta-line"><span class="meta-label">Advisers: </span><span class="meta-value">${esc(room.advisers)}</span></div>`;
+      if (room.phdCandidates && room.phdCandidates !== 'TBD')
+        html += `<div class="meta-line"><span class="meta-label">PhD Candidates: </span><span class="meta-value">${esc(room.phdCandidates)}</span></div>`;
+      html += `</div></div><div class="schedule-list">`;
+
+      room.entries.forEach(entry => {
+        const cls = ['schedule-entry'];
+        if (entry.isBreak) cls.push('is-break');
+        if (isCurrent(entry.startTime, entry.endTime)) cls.push('is-current');
+        html += `<div class="${cls.join(' ')}">`;
+        html += `<span class="entry-time">${esc(entry.startTime)}</span>`;
+        html += `<span class="entry-name">${esc(entry.name)}</span></div>`;
+      });
+      html += `</div></div>`;
+    });
+
+    html += `</div>
+      <div class="display-footer">
+        <div class="footer-left">
+          <img class="pu-logo"
+               src="https://symposium.orfe.princeton.edu/profiles/ps/themes/ps_base/images/pu-logo.svg"
+               alt="Princeton University">
+        </div>
+        <div class="footer-right">
+          <div class="footer-cta">
+            Visit the schedule to provide feedback on talks
+            <span class="footer-url">symposium.orfe.princeton.edu</span>
+          </div>
+          <img class="qr-code" src="${QR_IMG_URL}" alt="QR code: ${SYMPOSIUM_URL}">
+        </div>
+      </div>`;
+
+    app.innerHTML = html;
+  }
+
+  function esc(str) {
+    const el = document.createElement('span');
+    el.textContent = str;
+    return el.innerHTML;
+  }
+
+  // ── Fetch & display ────────────────────────────────────────────
+  async function loadSchedule() {
+    try {
+      let rooms;
+
+      if (DATA_MODE === 'json') {
+        // GitHub Pages — fetch the co-deployed JSON
+        const resp = await fetch('symposium_schedule.json', { cache: 'no-cache' });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        rooms = parseJSON(data);
+      } else {
+        // princeton.edu or localhost proxy
+        const url = DATA_MODE === 'html' ? SYMPOSIUM_URL : '/proxy/schedule';
+        const headers = DATA_MODE === 'html' ? { 'x-wdsoit-bot-bypass': 'true' } : {};
+        const resp = await fetch(url, { headers });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        rooms = parseHTML(await resp.text());
+      }
+
+      if (!rooms.length) {
+        document.getElementById('app').innerHTML =
+          '<div class="error-msg">No rooms found for the selected filter.</div>';
+        return;
+      }
+      render(rooms);
+    } catch (err) {
+      console.error('Failed to load schedule:', err);
+      document.getElementById('app').innerHTML =
+        `<div class="error-msg">Failed to load schedule: ${esc(err.message)}</div>`;
+    }
+  }
+
+  loadSchedule();
+  setInterval(loadSchedule, REFRESH_INTERVAL_MS);
+})();
+</script>
+</body>
+</html>

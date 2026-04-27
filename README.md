@@ -155,3 +155,43 @@ Runs the full test suite on pushes to main and pull requests. Tests can also be 
 ```bash
 docker build -f Dockerfile.test -t symposium-test . && docker run --rm symposium-test
 ```
+
+## Public Displays
+
+The `pages/` directory contains a public display page designed for conference room TVs (1080p and 4K). It is deployed automatically to GitHub Pages.
+
+### Display URLs
+
+Once GitHub Pages is enabled, the display is available at:
+
+| URL | View |
+|-----|------|
+| `display.html?floor=ground` | Ground floor rooms (001, 003, 008) |
+| `display.html?floor=1` | 1st floor rooms (101–125) |
+| `display.html?rooms=001,003` | Specific rooms only |
+| `display.html` | All rooms |
+
+Add `&highlight=false` to disable current-talk highlighting.
+
+### How it works
+
+- On GitHub Pages, `display.html` fetches the `symposium_schedule.json` that the generate workflow publishes to the `latest` release. The Pages workflow downloads this JSON and deploys it alongside the display page.
+- The page refreshes data every 5 minutes. The JSON is updated every 20 minutes by the generate workflow.
+- All sizing uses `vw` units so the layout scales identically on 1080p and 4K displays. On smaller screens (laptops), the page scrolls.
+
+### CSS Overrides
+
+For environments that inject CSS on top of the original symposium URL:
+
+- `override-base.css` — core overrides (always required)
+- `override-floor-ground.css` — show only ground floor rooms
+- `override-floor-1.css` — show only 1st floor rooms
+
+### Local Development
+
+```bash
+cd pages
+python3 ../serve.py 8000
+```
+
+Or serve with any static file server — the page falls back to `/proxy/schedule` when not on GitHub Pages or princeton.edu.

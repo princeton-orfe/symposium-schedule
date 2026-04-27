@@ -1,0 +1,308 @@
+/*
+ * ORFE Senior Thesis Symposium — Public Display CSS Override
+ *
+ * Apply this CSS on top of https://symposium.orfe.princeton.edu
+ * to transform the page for passive 4K TV displays.
+ *
+ * Combine with a floor-specific CSS (override-floor-ground.css or
+ * override-floor-1.css) to filter rooms by floor.
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+   1. HIDE IRRELEVANT CHROME
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Header, nav, search, footer, skip links, login */
+header#header,
+.header,
+footer#footer,
+.footer,
+.subfooter,
+.search-bar,
+.skip-links,
+.back-to-top,
+.jump-link-menu,
+.page-title,
+#block-ps-tiger-page-title {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   2. DISABLE ALL LINKS / INTERACTIVITY
+   ═══════════════════════════════════════════════════════════════ */
+
+a, button, input, select, textarea {
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+a {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   3. HIDE THESIS TITLES (subtitles)
+   ═══════════════════════════════════════════════════════════════ */
+
+.field--name-field-ps-events-subtitle {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   4. PAGE-LEVEL LAYOUT — dark background, no scroll
+   ═══════════════════════════════════════════════════════════════ */
+
+html {
+  overflow: hidden !important;
+  height: 2160px !important;
+}
+
+body {
+  background: #0a0a0a !important;
+  color: #f0ece6 !important;
+  font-family: 'Libre Franklin', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  overflow: hidden !important;
+  width: 3840px !important;
+  height: 2160px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  -webkit-font-smoothing: antialiased !important;
+}
+
+.page-container,
+.page,
+.dialog-off-canvas-main-canvas {
+  background: #0a0a0a !important;
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.main-container,
+.main-container > .container,
+.main-container > .container > .row,
+.main-container > .container > .row > .main {
+  max-width: none !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.region-content {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   5. ROOM BLOCKS — side-by-side column layout
+   ═══════════════════════════════════════════════════════════════ */
+
+/* The article wrapping all content */
+article.node {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.node__content {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 0 !important;
+  padding: 24px 32px 20px !important;
+  height: 2160px !important;
+  overflow: hidden !important;
+}
+
+/* Each layout--onecol section becomes part of the flex row */
+.node__content > .constrained-bkg-constrained-content.layout--onecol {
+  display: contents !important;
+}
+
+.node__content > .constrained-bkg-constrained-content.layout--onecol > .layout-container {
+  display: contents !important;
+}
+
+.node__content > .constrained-bkg-constrained-content.layout--onecol > .layout-container > .layout__region--content {
+  display: contents !important;
+}
+
+/* Each room block becomes a flex column */
+.block-ps-events-list-conference {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  background: #161616 !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  margin: 0 12px !important;
+  max-height: calc(2160px - 48px) !important;
+}
+
+.block-ps-events-list-conference:first-child {
+  margin-left: 0 !important;
+}
+
+.block-ps-events-list-conference:last-child {
+  margin-right: 0 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   6. ROOM HEADER — room number + advisers
+   ═══════════════════════════════════════════════════════════════ */
+
+.block-ps-events-list-conference > h2.block-heading {
+  background: linear-gradient(135deg, rgba(231,117,0,0.18) 0%, rgba(231,117,0,0.06) 100%) !important;
+  border-bottom: 2px solid #E77500 !important;
+  color: #E77500 !important;
+  font-family: 'Lora', Georgia, serif !important;
+  font-size: 30px !important;
+  font-weight: 700 !important;
+  padding: 16px 18px 14px !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+  line-height: 1.1 !important;
+}
+
+/* Adviser / PhD candidate summary */
+.block-description-summary {
+  padding: 10px 18px 12px !important;
+  border-bottom: 1px solid #2a2a2a !important;
+  flex-shrink: 0 !important;
+  background: rgba(255,255,255,0.02) !important;
+}
+
+.block-description-summary ul {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.block-description-summary li {
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+  color: #b8b0a4 !important;
+  margin-bottom: 4px !important;
+}
+
+.block-description-summary li:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   7. SCHEDULE ENTRIES — time + student name rows
+   ═══════════════════════════════════════════════════════════════ */
+
+.events-list-conference,
+.events-list-conference-items-outer,
+.events-list-conference-items-inner {
+  flex: 1 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.events-list-conference-item {
+  display: grid !important;
+  grid-template-columns: auto 1fr !important;
+  gap: 12px !important;
+  padding: 8px 16px !important;
+  align-items: baseline !important;
+  border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+.events-list-conference-item:last-child {
+  border-bottom: none !important;
+}
+
+/* Time sidebar */
+.events-list-conference-item-sidebar {
+  width: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: none !important;
+  float: none !important;
+}
+
+.events-list-conference-item-sidebar .field--name-field-ps-events-date {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #7a7468 !important;
+  white-space: nowrap !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* Hide the end time and separator for compactness */
+.events-list-conference-item-sidebar .date-range-separator,
+.events-list-conference-item-sidebar .time:last-child {
+  display: none !important;
+}
+
+/* Details (name) */
+.events-list-conference-item-details {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.events-list-conference-item-details .field--name-title {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: #f0ece6 !important;
+  line-height: 1.25 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   8. BREAK & PHOTO ROWS — distinct styling
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Target Break & Photo entries by their link href */
+.events-list-conference-item-details .field--name-title a[href*="break"] {
+  color: #E77500 !important;
+  font-weight: 500 !important;
+  font-style: italic !important;
+  font-size: 17px !important;
+}
+
+/* Highlight the break row background (these link to /events/2026/break-photo) */
+.events-list-conference-item:has(.field--name-title a[href*="break"]) {
+  background: rgba(231,117,0,0.08) !important;
+  border-top: 1px solid rgba(231,117,0,0.25) !important;
+  border-bottom: 1px solid rgba(231,117,0,0.25) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   9. DRUPAL / MISC CLEANUP
+   ═══════════════════════════════════════════════════════════════ */
+
+.highlighted,
+#highlighted,
+.region-highlighted,
+[data-drupal-messages-fallback],
+.contextual,
+.contextual-region > .contextual,
+#ps-current-username {
+  display: none !important;
+}
+
+/* Remove container max-width constraints */
+.container {
+  max-width: none !important;
+  width: 100% !important;
+  padding: 0 !important;
+}
+
+.row {
+  margin: 0 !important;
+}
+
+.col-md-12 {
+  padding: 0 !important;
+}
+
+/* Hide exposed filters (day picker etc.) */
+.exposed-filters-0 > *:not(.events-list-conference-items-outer) {
+  display: none !important;
+}

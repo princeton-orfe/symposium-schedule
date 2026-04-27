@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORFE Symposium — Public Displays</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 20px; color: #333; }
+  h1 { font-size: 1.4rem; border-bottom: 3px solid #E77500; padding-bottom: 8px; display: inline-block; }
+  a { color: #E77500; }
+  ul { list-style: none; padding: 0; }
+  li { margin: 12px 0; }
+  li a { font-size: 1.1rem; font-weight: 600; }
+  .desc { font-size: 0.9rem; color: #717171; margin-top: 2px; }
+  h2 { font-size: 1.1rem; margin-top: 32px; color: #717171; text-transform: uppercase; letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+<h1>ORFE Symposium Public Displays</h1>
+
+<h2>Display Pages</h2>
+<ul>
+  <li>
+    <a href="display.html?floor=ground">Ground Floor</a>
+    <div class="desc">Rooms 001, 003, 008 — 3-column layout</div>
+  </li>
+  <li>
+    <a href="display.html?floor=1">1st Floor</a>
+    <div class="desc">Rooms 101, 107, 110, 122, 123, 125 — multi-column layout</div>
+  </li>
+  <li>
+    <a href="display.html">All Rooms</a>
+    <div class="desc">All rooms in a single view</div>
+  </li>
+</ul>
+
+<h2>CSS Overrides</h2>
+<p class="desc">For injecting onto the original symposium site URL directly.</p>
+<ul>
+  <li><a href="override-base.css">override-base.css</a> — base display overrides (always include)</li>
+  <li><a href="override-floor-ground.css">override-floor-ground.css</a> — ground floor filter</li>
+  <li><a href="override-floor-1.css">override-floor-1.css</a> — 1st floor filter</li>
+</ul>
+</body>
+</html>

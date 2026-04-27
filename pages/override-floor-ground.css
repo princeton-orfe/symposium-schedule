@@ -1,0 +1,36 @@
+/*
+ * Floor filter: Ground Floor only (Rooms 001, 003, 008)
+ * Use with override-base.css
+ *
+ * Hides 1st-floor rooms by their data-component-uuid.
+ */
+
+/* 101 */ [data-component-uuid="4075db57-2f24-407d-8476-cbd40d03f243"],
+/* 107 */ [data-component-uuid="0a0aed8b-71f1-46ea-81ea-9e6a0e986e41"],
+/* 110 */ [data-component-uuid="f35bc936-28fc-4ca8-8bf4-3b48ad164977"],
+/* 123 */ [data-component-uuid="c56fc0c5-c985-4ea4-904f-fcb787524835"],
+/* 125 */ [data-component-uuid="d7f3f8b3-e532-49d6-a930-5c115243531c"] {
+  display: none !important;
+}
+
+/* With only 3 columns, we can afford larger fonts */
+.block-ps-events-list-conference > h2.block-heading {
+  font-size: 38px !important;
+}
+
+.block-description-summary li {
+  font-size: 16px !important;
+}
+
+.events-list-conference-item-sidebar .field--name-field-ps-events-date {
+  font-size: 20px !important;
+}
+
+.events-list-conference-item-details .field--name-title {
+  font-size: 26px !important;
+}
+
+.events-list-conference-item {
+  padding: 11px 20px !important;
+  gap: 16px !important;
+}
