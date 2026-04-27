@@ -169,6 +169,14 @@
     padding: 1.1vh 1.15vw 0.9vh;
     border-bottom: 1px solid var(--color-neutral-10);
     flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5vw;
+  }
+
+  .room-card-header-text {
+    flex: 1;
+    min-width: 0;
   }
 
   .room-number {
@@ -180,6 +188,16 @@
     padding-bottom: 0.46vh;
     border-bottom: 0.16vw solid var(--color-brand-70);
     display: inline-block;
+  }
+
+  .room-qr {
+    flex-shrink: 0;
+    width: 3.2vw;
+    height: 3.2vw;
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 0.1vw;
+    margin-top: 0.1vh;
   }
 
   .room-meta {
@@ -412,8 +430,12 @@
 
   // ── Configuration ──────────────────────────────────────────────
   const SYMPOSIUM_URL = 'https://symposium.orfe.princeton.edu';
-  const QR_IMG_URL = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='
-    + encodeURIComponent(SYMPOSIUM_URL);
+  const QR_API = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=';
+  const QR_IMG_URL = QR_API + encodeURIComponent(SYMPOSIUM_URL);
+
+  function roomQrUrl(roomNum) {
+    return QR_API + encodeURIComponent(SYMPOSIUM_URL + '#_' + roomNum + '---Sherrerd-Hall');
+  }
 
   // Determine data source based on hosting environment:
   //   - GitHub Pages (*.github.io): fetch the co-deployed JSON
@@ -589,13 +611,16 @@
 
     rooms.forEach(room => {
       html += `<div class="room-card"><div class="room-card-header">`;
+      html += `<div class="room-card-header-text">`;
       html += `<div class="room-number">${esc(room.fullName)}</div>`;
       html += `<div class="room-meta">`;
       if (room.advisers)
         html += `<div class="meta-line"><span class="meta-label">Advisers: </span><span class="meta-value">${esc(room.advisers)}</span></div>`;
       if (room.phdCandidates && room.phdCandidates !== 'TBD')
         html += `<div class="meta-line"><span class="meta-label">PhD Candidates: </span><span class="meta-value">${esc(room.phdCandidates)}</span></div>`;
-      html += `</div></div><div class="schedule-list">`;
+      html += `</div></div>`;
+      html += `<img class="room-qr" src="${roomQrUrl(room.roomNum)}" alt="QR: Room ${esc(room.roomNum)}">`;
+      html += `</div><div class="schedule-list">`;
 
       room.entries.forEach(entry => {
         const cls = ['schedule-entry'];
