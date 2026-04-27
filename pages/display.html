@@ -66,13 +66,13 @@
   /* ── Header bar ──────────────────────────────────────────────── */
   .display-header {
     flex-shrink: 0;
-    height: 5.1vh;
-    min-height: 55px;
+    height: 8.5vh;
+    min-height: 70px;
     background: var(--color-neutral-85);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1.25vw;
+    padding: 0 1.8vw;
     border-bottom: 0.26vw solid var(--color-brand-70);
   }
 
@@ -83,8 +83,8 @@
   }
 
   .display-header .site-logo {
-    height: 3.2vw;
-    min-height: 32px;
+    height: 3.8vw;
+    min-height: 38px;
     width: auto;
   }
 
@@ -107,12 +107,12 @@
 
   .display-header .floor-label {
     font-family: var(--font-display);
-    font-size: 1.15vw;
+    font-size: 1.25vw;
     font-weight: 600;
     color: var(--color-white);
     background: rgba(255,255,255,0.12);
-    padding: 0.46vh 1.46vw;
-    border-radius: 0.1vw;
+    padding: 0.65vh 1.8vw;
+    border-radius: 0.15vw;
     letter-spacing: 0.02em;
     white-space: nowrap;
   }
@@ -121,8 +121,8 @@
   .rooms-grid {
     flex: 1;
     display: grid;
-    padding: 1.11vh 0.83vw 0.74vh;
-    gap: 0.625vw;
+    padding: 1.4vh 1.1vw 1.2vh;
+    gap: 1vw 0.8vw;
     overflow: hidden;
     background: var(--color-neutral-5);
     min-height: 0;
@@ -153,7 +153,7 @@
   }
 
   .room-card-header {
-    padding: 0.83vh 1.15vw 0.74vh;
+    padding: 1.1vh 1.15vw 0.9vh;
     border-bottom: 1px solid var(--color-neutral-10);
     flex-shrink: 0;
   }
@@ -164,19 +164,19 @@
     font-weight: 700;
     color: var(--color-neutral-100);
     line-height: 1.15;
-    padding-bottom: 0.37vh;
+    padding-bottom: 0.46vh;
     border-bottom: 0.16vw solid var(--color-brand-70);
     display: inline-block;
   }
 
   .room-meta {
-    margin-top: 0.56vh;
+    margin-top: 0.74vh;
     font-size: 0.78vw;
-    line-height: 1.4;
+    line-height: 1.45;
     color: var(--color-neutral-60);
   }
 
-  .room-meta .meta-line { margin-bottom: 0.14vh; }
+  .room-meta .meta-line { margin-bottom: 0.28vh; }
   .room-meta .meta-line:last-child { margin-bottom: 0; }
 
   .room-meta .meta-label {
@@ -196,15 +196,17 @@
   .schedule-list {
     flex: 1;
     overflow: hidden;
-    padding: 0.19vh 0;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
   }
 
   .schedule-entry {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 0.83vw;
-    padding: 0.46vh 1.15vw;
+    padding: 0.55vh 1.15vw;
     align-items: baseline;
     border-bottom: 1px solid var(--color-neutral-10);
   }
@@ -305,52 +307,52 @@
   /* ── Footer ──────────────────────────────────────────────────── */
   .display-footer {
     flex-shrink: 0;
-    height: 4.63vh;
-    min-height: 50px;
+    height: 7.5vh;
+    min-height: 65px;
     background: var(--color-neutral-85);
-    border-top: 0.16vw solid var(--color-brand-70);
+    border-top: 0.26vw solid var(--color-brand-70);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1.25vw;
-    gap: 1.04vw;
+    padding: 0 1.8vw;
+    gap: 1.25vw;
   }
 
   .display-footer .footer-left { display: flex; align-items: center; }
 
   .display-footer .pu-logo {
-    height: 1.8vw;
-    min-height: 18px;
+    height: 2.6vw;
+    min-height: 26px;
     width: auto;
     opacity: 0.85;
   }
 
-  .display-footer .footer-right { display: flex; align-items: center; gap: 1.04vw; }
+  .display-footer .footer-right { display: flex; align-items: center; gap: 1.25vw; }
 
   .display-footer .footer-cta {
     font-family: var(--font-display);
-    font-size: 1.04vw;
+    font-size: 1.15vw;
     font-weight: 500;
     color: var(--color-white);
     text-align: right;
-    line-height: 1.3;
+    line-height: 1.35;
   }
 
   .display-footer .footer-cta .footer-url {
     font-weight: 300;
-    font-size: 0.78vw;
+    font-size: 0.89vw;
     opacity: 0.7;
     display: block;
-    margin-top: 0.1em;
+    margin-top: 0.15em;
   }
 
   .display-footer .qr-code {
-    height: 3.7vh;
-    min-height: 40px;
+    height: 5.5vh;
+    min-height: 50px;
     width: auto;
     border-radius: 0.1vw;
     background: var(--color-white);
-    padding: 0.19vh;
+    padding: 0.28vh;
   }
 
   /* ── Loading / error ─────────────────────────────────────────── */
