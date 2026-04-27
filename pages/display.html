@@ -50,15 +50,27 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Outer html/body: scrollable for developer preview on small screens */
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
   body {
     background: var(--color-white);
     color: var(--color-neutral-100);
     font-family: var(--font-body);
+    /* Scrollable wrapper for developer screens smaller than the display */
+    overflow: auto;
+  }
+
+  /* Fixed-size display frame: exactly one viewport on the target display */
+  .display-frame {
     width: 100vw;
     min-width: 1920px;
     height: 100vh;
     min-height: 1080px;
-    overflow: auto;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
   }
@@ -119,13 +131,14 @@
 
   /* ── Room columns grid ───────────────────────────────────────── */
   .rooms-grid {
-    flex: 1;
+    /* Explicit height: viewport minus header, footer, and their orange borders */
+    height: calc(100vh - 8.5vh - 7.5vh - 0.26vw - 0.26vw);
+    min-height: calc(1080px - 92px - 81px - 5px - 5px);
     display: grid;
     padding: 1.4vh 1.1vw 1.2vh;
-    gap: 1vw 0.8vw;
+    gap: 1vh 0.8vw;
     overflow: hidden;
     background: var(--color-neutral-5);
-    min-height: 0;
   }
 
   /* 1–5 rooms: single row */
@@ -321,10 +334,10 @@
   .display-footer .footer-left { display: flex; align-items: center; }
 
   .display-footer .pu-logo {
-    height: 2.6vw;
-    min-height: 26px;
+    height: 1.2vw;
+    min-height: 14px;
     width: auto;
-    opacity: 0.85;
+    opacity: 0.75;
   }
 
   .display-footer .footer-right { display: flex; align-items: center; gap: 1.25vw; }
@@ -360,7 +373,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 1;
+    width: 100vw;
+    min-width: 1920px;
+    height: 100vh;
+    min-height: 1080px;
     background: var(--color-neutral-5);
   }
 
@@ -556,6 +572,7 @@
     const colCount = Math.min(rooms.length, 9);
 
     let html = `
+      <div class="display-frame">
       <div class="display-header">
         <div class="title-group">
           <img class="site-logo"
@@ -605,6 +622,7 @@
           </div>
           <img class="qr-code" src="${QR_IMG_URL}" alt="QR code: ${SYMPOSIUM_URL}">
         </div>
+      </div>
       </div>`;
 
     app.innerHTML = html;
