@@ -4,7 +4,7 @@ import argparse
 import hashlib
 from unittest.mock import patch, MagicMock
 from reportlab.platypus import Table
-from scrape_schedule import scrape_schedule, create_pdf, create_grid_pdf, _shorten_time
+from scrape_schedule import scrape_schedule, create_pdf, create_grid_pdf, create_grader_sheets, _shorten_time
 
 class TestScrapeSchedule(unittest.TestCase):
     def test_scrape_returns_dict(self):
@@ -244,6 +244,7 @@ class TestScrapeSchedule(unittest.TestCase):
         parser.add_argument('--no-title', action='store_true', help="Exclude the title from PDF output.")
         parser.add_argument('--qr-codes', action='store_true', help="Include QR codes linking to each room's webpage anchor.")
         parser.add_argument('--grid', action='store_true', help="Generate a landscape grid PDF with all rooms side by side.")
+        parser.add_argument('--grader-sheets', action='store_true', help="Generate backup grader sheets (one page per presenter).")
 
         # Test default arguments
         args = parser.parse_args([])
@@ -255,9 +256,10 @@ class TestScrapeSchedule(unittest.TestCase):
         self.assertFalse(args.no_title)
         self.assertFalse(args.qr_codes)
         self.assertFalse(args.grid)
+        self.assertFalse(args.grader_sheets)
 
         # Test all flags set
-        args = parser.parse_args(['--json', '--allow-breaks', '--show-headers', '--hash', '--hash-file', 'out.txt', '--no-title', '--qr-codes', '--grid'])
+        args = parser.parse_args(['--json', '--allow-breaks', '--show-headers', '--hash', '--hash-file', 'out.txt', '--no-title', '--qr-codes', '--grid', '--grader-sheets'])
         self.assertTrue(args.json)
         self.assertTrue(args.allow_breaks)
         self.assertTrue(args.show_headers)
@@ -266,6 +268,7 @@ class TestScrapeSchedule(unittest.TestCase):
         self.assertTrue(args.no_title)
         self.assertTrue(args.qr_codes)
         self.assertTrue(args.grid)
+        self.assertTrue(args.grader_sheets)
 
     @patch('scrape_schedule.SimpleDocTemplate')
     def test_create_grid_pdf_alt_grader_label(self, mock_doc_template):
@@ -508,6 +511,68 @@ class TestScrapeSchedule(unittest.TestCase):
         self.assertIn('Jones', rooms['101']['graders'])
         self.assertEqual('', rooms['107']['advisors'])
         self.assertEqual('', rooms['107']['graders'])
+
+    @patch('scrape_schedule.SimpleDocTemplate')
+    def test_create_grader_sheets_basic(self, mock_doc_template):
+        """Test grader sheets PDF is created with one page per presenter."""
+        mock_doc = MagicMock()
+        mock_doc_template.return_value = mock_doc
+
+        rooms = {
+            '101': {
+                'advisors': 'ORFE Advisors: Smith',
+                'graders': 'PhD Candidate Graders: Jones',
+                'schedule': [
+                    ('9:00 am – 9:15 am', 'Alice'),
+                    ('9:15 am – 9:30 am', 'Bob'),
+                ],
+            },
+            '107': {
+                'advisors': 'ORFE Advisors: Doe',
+                'graders': 'PhD Candidate Graders: Lee',
+                'schedule': [('9:00 am – 9:15 am', 'Carol')],
+            },
+        }
+        create_grader_sheets(rooms, "test_grader.pdf")
+
+        mock_doc_template.assert_called_once()
+        mock_doc.build.assert_called_once()
+        # 3 presenters total → story should contain PageBreak elements
+        story = mock_doc.build.call_args[0][0]
+        from reportlab.platypus import PageBreak
+        page_breaks = [e for e in story if isinstance(e, PageBreak)]
+        self.assertEqual(len(page_breaks), 2)  # between each of 3 pages
+
+    @patch('scrape_schedule.SimpleDocTemplate')
+    def test_create_grader_sheets_skips_breaks(self, mock_doc_template):
+        """Test grader sheets skips break/lunch/photo entries."""
+        mock_doc = MagicMock()
+        mock_doc_template.return_value = mock_doc
+
+        rooms = {
+            '101': {
+                'advisors': 'ORFE Advisors: Smith',
+                'graders': 'PhD Candidate Graders: Jones',
+                'schedule': [
+                    ('9:00 am – 9:15 am', 'Alice'),
+                    ('10:00 am – 10:15 am', 'Break'),
+                    ('10:15 am – 10:30 am', 'Bob'),
+                    ('12:00 pm – 1:00 pm', 'Lunch in Atrium'),
+                ],
+            },
+        }
+        create_grader_sheets(rooms, "test_grader.pdf")
+
+        story = mock_doc.build.call_args[0][0]
+        from reportlab.platypus import PageBreak
+        page_breaks = [e for e in story if isinstance(e, PageBreak)]
+        # Only 2 real presenters (Alice, Bob) → 1 page break
+        self.assertEqual(len(page_breaks), 1)
+
+    def test_create_grader_sheets_empty_rooms(self):
+        """Test grader sheets handles empty rooms dict gracefully."""
+        # Should return without error and not create a file
+        create_grader_sheets({}, "test_grader.pdf")
 
     @patch('scrape_schedule.sync_playwright')
     def test_maintenance_mode_detection(self, mock_playwright):

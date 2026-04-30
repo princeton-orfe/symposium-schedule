@@ -133,6 +133,10 @@ dmypy.json
 symposium_schedule.pdf
 symposium_schedule_grid.pdf
 symposium_schedule.json
+grader_sheets.pdf
+
+# Local preview
+_preview/
 
 # Claude Code
 CLAUDE.md

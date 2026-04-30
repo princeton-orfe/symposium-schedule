@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, landscape
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether, Image, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from playwright.sync_api import sync_playwright
 import argparse
@@ -416,6 +416,117 @@ def create_grid_pdf(rooms, filename, include_title=True):
     doc.build(story)
 
 
+def create_grader_sheets(rooms, filename):
+    """Generate a PDF with one grader sheet per presenter per room."""
+    if not rooms:
+        return
+    from reportlab.lib.units import inch
+
+    doc = SimpleDocTemplate(
+        filename, pagesize=letter,
+        topMargin=0.75 * inch, bottomMargin=0.5 * inch,
+        leftMargin=0.75 * inch, rightMargin=0.75 * inch,
+    )
+    styles = getSampleStyleSheet()
+    usable_width = letter[0] - 1.5 * inch
+
+    title_style = ParagraphStyle(
+        'SheetTitle', parent=styles['Title'],
+        fontSize=20, fontName='Helvetica-Bold', spaceAfter=4,
+    )
+    subtitle_style = ParagraphStyle(
+        'SheetSubtitle', parent=styles['Title'],
+        fontSize=14, fontName='Helvetica', spaceAfter=20,
+    )
+    presenter_style = ParagraphStyle(
+        'PresenterName', parent=styles['Normal'],
+        fontSize=18, fontName='Helvetica-Bold', spaceAfter=12,
+    )
+    info_style = ParagraphStyle(
+        'InfoStyle', parent=styles['Normal'],
+        fontSize=14, fontName='Helvetica', spaceAfter=20,
+    )
+    label_style = ParagraphStyle(
+        'LabelStyle', parent=styles['Normal'],
+        fontSize=14, fontName='Helvetica-Bold', spaceAfter=8,
+    )
+    grade_cell_style = ParagraphStyle(
+        'GradeCell', parent=styles['Normal'],
+        fontSize=28, fontName='Helvetica-Bold', alignment=1,
+        leading=28,
+    )
+
+    break_keywords = ['break', 'photo', 'lunch']
+    story = []
+    first_page = True
+
+    for room in sorted(rooms.keys()):
+        for time_str, presenter in rooms[room]['schedule']:
+            if any(kw in presenter.lower() for kw in break_keywords):
+                continue
+
+            if not first_page:
+                story.append(PageBreak())
+            first_page = False
+
+            # Header
+            story.append(Paragraph("ORFE Thesis Symposium", title_style))
+            story.append(Paragraph("Presentation Grader Sheet", subtitle_style))
+
+            # Rule
+            story.append(Table([['']], colWidths=[usable_width], rowHeights=[1],
+                               style=[('LINEABOVE', (0, 0), (-1, 0), 1, colors.black)]))
+            story.append(Spacer(1, 16))
+
+            # Presenter info
+            story.append(Paragraph(f"Presenter: {presenter}", presenter_style))
+            story.append(Paragraph(f"Room {room} - Sherrerd Hall&nbsp;&nbsp;|&nbsp;&nbsp;{time_str}", info_style))
+
+            # Evaluator line
+            line = "_" * 60
+            story.append(Paragraph(f"Your Name: {line}", label_style))
+            story.append(Spacer(1, 20))
+
+            # Grade section
+            story.append(Paragraph("Presentation Quality (circle one):", label_style))
+            story.append(Spacer(1, 8))
+
+            grade_data = [[
+                Paragraph('A\u2013', grade_cell_style),
+                Paragraph('A', grade_cell_style),
+                Paragraph('A+', grade_cell_style),
+            ]]
+            grade_table = Table(grade_data, colWidths=[150, 150, 150], rowHeights=[60])
+            grade_table.setStyle(TableStyle([
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('BOX', (0, 0), (0, 0), 2, colors.black),
+                ('BOX', (1, 0), (1, 0), 2, colors.black),
+                ('BOX', (2, 0), (2, 0), 2, colors.black),
+                ('TOPPADDING', (0, 0), (-1, -1), 16),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 16),
+                ('LEFTPADDING', (0, 0), (-1, -1), 12),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+            ]))
+            story.append(grade_table)
+            story.append(Spacer(1, 24))
+
+            # Rule
+            story.append(Table([['']], colWidths=[usable_width], rowHeights=[1],
+                               style=[('LINEABOVE', (0, 0), (-1, 0), 1, colors.black)]))
+            story.append(Spacer(1, 12))
+
+            # Comments section
+            story.append(Paragraph("Comments:", label_style))
+            story.append(Spacer(1, 8))
+            for _ in range(12):
+                story.append(Table([['']], colWidths=[usable_width], rowHeights=[24],
+                                   style=[('LINEBELOW', (0, 0), (-1, 0), 0.5, colors.grey)]))
+
+    if story:
+        doc.build(story)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scrape symposium schedule and generate PDF or JSON.")
     parser.add_argument('--json', action='store_true', help="Output data as JSON instead of generating PDF.")
@@ -426,6 +537,7 @@ if __name__ == "__main__":
     parser.add_argument('--no-title', action='store_true', help="Exclude the title from PDF output.")
     parser.add_argument('--qr-codes', action='store_true', help="Include QR codes linking to each room's webpage anchor.")
     parser.add_argument('--grid', action='store_true', help="Generate a landscape grid PDF with all rooms side by side.")
+    parser.add_argument('--grader-sheets', action='store_true', help="Generate backup grader sheets (one page per presenter).")
     args = parser.parse_args()
 
     try:
@@ -459,7 +571,11 @@ if __name__ == "__main__":
         create_pdf(rooms, "symposium_schedule.pdf", keep_together=not args.allow_breaks, show_headers=args.show_headers, include_title=not args.no_title, qr_codes=args.qr_codes)
         if args.grid:
             create_grid_pdf(rooms, "symposium_schedule_grid.pdf", include_title=not args.no_title)
+        if args.grader_sheets:
+            create_grader_sheets(rooms, "grader_sheets.pdf")
     else:
         create_pdf(rooms, "symposium_schedule.pdf", keep_together=not args.allow_breaks, show_headers=args.show_headers, include_title=not args.no_title, qr_codes=args.qr_codes)
         if args.grid:
             create_grid_pdf(rooms, "symposium_schedule_grid.pdf", include_title=not args.no_title)
+        if args.grader_sheets:
+            create_grader_sheets(rooms, "grader_sheets.pdf")

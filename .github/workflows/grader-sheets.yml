@@ -1,0 +1,91 @@
+name: Generate Grader Sheets
+
+on:
+  workflow_dispatch:
+
+env:
+  SCHEDULE_SOURCE: ${{ vars.SCHEDULE_SOURCE }}
+  BYPASS_HDR: ${{ vars.BYPASS_HDR }}
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Cache Playwright browsers
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-playwright-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Install Playwright browsers
+      run: python -m playwright install chromium
+
+    - name: Generate grader sheets
+      id: generate
+      run: |
+        if ! python scrape_schedule.py --grader-sheets; then
+          echo "::warning::Grader sheet generation failed — site may be in maintenance mode or unreachable."
+          echo "generated=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        echo "generated=true" >> $GITHUB_OUTPUT
+
+    - name: Upload grader sheets artifact
+      if: steps.generate.outputs.generated == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: grader-sheets
+        path: grader_sheets.pdf
+
+    - name: Delete existing grader sheets release
+      if: steps.generate.outputs.generated == 'true'
+      run: |
+        if gh release view grader-sheets >/dev/null 2>&1; then
+          gh release delete grader-sheets --yes || true
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create Release
+      if: steps.generate.outputs.generated == 'true'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: grader-sheets
+        name: Thesis Presentation Grader Sheets
+        body: |
+          Backup grader sheets for the ORFE Thesis Symposium.
+
+          One page per presenter per room — print and distribute as needed.
+
+          **Grade options:** A-, A, A+
+
+          Generated from commit: ${{ github.sha }}
+        files: grader_sheets.pdf
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
