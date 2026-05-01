@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>Now Presenting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-brand-70: #E77500;
+    --color-brand-80: #C1560E;
+    --color-brand-10: #FFF7F2;
+    --color-brand-20: #FEECDE;
+    --color-neutral-5: #f7f7f7;
+    --color-neutral-10: #eeeeee;
+    --color-neutral-20: #D9D9D9;
+    --color-neutral-40: #a0a0a0;
+    --color-neutral-60: #717171;
+    --color-neutral-85: #333;
+    --color-neutral-100: #121212;
+    --color-white: #fff;
+    --color-black: #000;
+    --font-display: Montserrat, sans-serif;
+    --font-body: Roboto, sans-serif;
+    --break-bg: rgb(255, 240, 200);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    width: 1280px; height: 720px;
+    overflow: hidden;
+    background: var(--color-neutral-5);
+    font-family: var(--font-body);
+    color: var(--color-neutral-100);
+  }
+
+  .frame {
+    width: 1280px;
+    height: 720px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Header ─────────────────────────────────────────────── */
+  .header {
+    flex-shrink: 0;
+    background: var(--color-neutral-85);
+    border-bottom: 4px solid var(--color-brand-70);
+    padding: 16px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+  }
+
+  .room-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--color-white);
+  }
+
+  .room-subtitle {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.6);
+  }
+
+  .clock {
+    font-family: var(--font-body);
+    font-size: 22px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.75);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Speaker cards ──────────────────────────────────────── */
+  .cards {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+    padding: 24px 48px;
+    min-height: 0;
+  }
+
+  .card {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 20px 28px;
+    border-radius: 8px;
+    background: var(--color-white);
+    border: 1px solid var(--color-neutral-20);
+    transition: all 0.3s ease;
+  }
+
+  .card.is-previous {
+    opacity: 0.45;
+  }
+
+  .card.is-current {
+    background: var(--color-brand-10);
+    border: 2px solid var(--color-brand-70);
+    box-shadow: 0 2px 16px rgba(231, 117, 0, 0.15);
+    padding: 28px 32px;
+  }
+
+  .card.is-next {
+    opacity: 0.7;
+  }
+
+  .card.is-break {
+    background: var(--break-bg);
+    border-color: #e6d5a0;
+  }
+
+  .card.is-empty {
+    border: 1px dashed var(--color-neutral-20);
+    background: transparent;
+    justify-content: center;
+  }
+
+  .card-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-neutral-40);
+    min-width: 90px;
+    flex-shrink: 0;
+  }
+
+  .card.is-current .card-label {
+    color: var(--color-brand-80);
+    font-size: 12px;
+  }
+
+  .card-time {
+    font-family: var(--font-body);
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--color-neutral-60);
+    min-width: 120px;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .card.is-current .card-time {
+    font-size: 24px;
+    color: var(--color-brand-80);
+    font-weight: 500;
+  }
+
+  .card-name {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--color-neutral-100);
+    flex: 1;
+  }
+
+  .card.is-current .card-name {
+    font-size: 32px;
+  }
+
+  .card.is-break .card-name {
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  .card-empty-text {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--color-neutral-40);
+  }
+
+  .card-qr {
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: 4px;
+    background: var(--color-white);
+    border: 1px solid var(--color-neutral-20);
+  }
+
+  .card.is-current .card-qr {
+    width: 80px;
+    height: 80px;
+  }
+
+  .card.is-break .card-qr,
+  .card.is-empty .card-qr {
+    display: none;
+  }
+
+  .card-indicator {
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-brand-70);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  /* ── Footer ─────────────────────────────────────────────── */
+  .footer {
+    flex-shrink: 0;
+    height: 36px;
+    background: var(--color-neutral-85);
+    border-top: 3px solid var(--color-brand-70);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+  }
+
+  .footer-slogan {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.55);
+  }
+
+  .footer-url {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.55);
+  }
+
+  /* ── Loading / error ────────────────────────────────────── */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1280px;
+    height: 720px;
+    background: var(--color-neutral-5);
+  }
+
+  .loading-text {
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: var(--color-neutral-40);
+    animation: pulse-load 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-load {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  .error-msg {
+    text-align: center;
+    padding: 60px;
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: #c0392b;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="loading"><span class="loading-text">Loading schedule...</span></div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var BREAK_KEYWORDS = ['break', 'photo', 'lunch'];
+  var SYMPOSIUM_BASE = 'https://symposium.orfe.princeton.edu';
+  var QR_API = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=';
+  var params = new URLSearchParams(window.location.search);
+  var roomParam = params.get('room');
+  var refreshMs = parseInt(params.get('refresh') || '180', 10) * 1000;
+
+  if (!roomParam) {
+    document.getElementById('app').innerHTML =
+      '<div class="error-msg">No room specified. Use <strong>?room=001</strong></div>';
+    return;
+  }
+
+  function esc(str) {
+    var el = document.createElement('span');
+    el.textContent = str;
+    return el.innerHTML;
+  }
+
+  function isBreak(name) {
+    var lower = name.toLowerCase();
+    return BREAK_KEYWORDS.some(function(kw) { return lower.indexOf(kw) !== -1; });
+  }
+
+  function presenterUrl(name) {
+    var slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+    return SYMPOSIUM_BASE + '/events/2026/' + slug;
+  }
+
+  function parseTimeToday(str) {
+    var m = str.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+    if (!m) return null;
+    var h = parseInt(m[1]), min = parseInt(m[2]), ap = m[3].toLowerCase();
+    if (ap === 'pm' && h !== 12) h += 12;
+    if (ap === 'am' && h === 12) h = 0;
+    var d = new Date();
+    d.setHours(h, min, 0, 0);
+    return d;
+  }
+
+  function shortTime(timeRange) {
+    return timeRange.split(/\s*[\u2013\u2014-]+\s*/)[0].trim();
+  }
+
+  function findCurrentIndex(entries) {
+    var now = new Date();
+    for (var i = 0; i < entries.length; i++) {
+      var s = parseTimeToday(entries[i].startTime);
+      var e = parseTimeToday(entries[i].endTime);
+      if (s && e && now >= s && now < e) return i;
+    }
+    // If before first talk, return 0 as upcoming
+    if (entries.length > 0) {
+      var first = parseTimeToday(entries[0].startTime);
+      if (first && new Date() < first) return -1; // before start
+    }
+    return entries.length; // after all done
+  }
+
+  function updateClock() {
+    var el = document.getElementById('clock');
+    if (!el) return;
+    var now = new Date();
+    var h = now.getHours(), m = now.getMinutes();
+    var ap = h >= 12 ? 'PM' : 'AM';
+    if (h === 0) h = 12;
+    else if (h > 12) h -= 12;
+    var mm = m < 10 ? '0' + m : m;
+    el.textContent = h + ':' + mm + ' ' + ap;
+  }
+
+  function renderCard(entry, label, state) {
+    var cls = 'card is-' + state;
+    if (entry && isBreak(entry.name)) cls += ' is-break';
+
+    if (!entry) {
+      return '<div class="card is-empty">' +
+        '<span class="card-label">' + esc(label) + '</span>' +
+        '<span class="card-empty-text">\u2014</span>' +
+        '</div>';
+    }
+
+    var indicator = state === 'current' ? '<div class="card-indicator"></div>' : '';
+    var qr = isBreak(entry.name) ? '' :
+      '<img class="card-qr" src="' + QR_API + encodeURIComponent(presenterUrl(entry.name)) +
+      '" alt="QR">';
+
+    return '<div class="' + cls + '">' +
+      '<span class="card-label">' + esc(label) + '</span>' +
+      '<span class="card-time">' + esc(shortTime(entry.startTime)) + '</span>' +
+      '<span class="card-name">' + esc(entry.name) + '</span>' +
+      qr +
+      indicator +
+      '</div>';
+  }
+
+  function render(roomData) {
+    var entries = roomData.entries;
+    var idx = findCurrentIndex(entries);
+
+    var prev = null, curr = null, next = null;
+
+    if (idx === -1) {
+      // Before start
+      next = entries[0] || null;
+      curr = null;
+      prev = null;
+    } else if (idx >= entries.length) {
+      // All done
+      prev = entries.length > 0 ? entries[entries.length - 1] : null;
+      curr = null;
+      next = null;
+    } else {
+      curr = entries[idx];
+      prev = idx > 0 ? entries[idx - 1] : null;
+      next = idx < entries.length - 1 ? entries[idx + 1] : null;
+    }
+
+    var cardsHtml =
+      renderCard(prev, 'Previous', 'previous') +
+      renderCard(curr, 'Now Presenting', 'current') +
+      renderCard(next, 'Up Next', 'next');
+
+    document.getElementById('app').innerHTML =
+      '<div class="frame">' +
+        '<div class="header">' +
+          '<div class="header-left">' +
+            '<span class="room-title">Room ' + esc(roomData.roomNum) + '</span>' +
+            '<span class="room-subtitle">Sherrerd Hall</span>' +
+          '</div>' +
+          '<span class="clock" id="clock"></span>' +
+        '</div>' +
+        '<div class="cards">' + cardsHtml + '</div>' +
+        '<div class="footer">' +
+          '<span class="footer-slogan">ORFE Senior Thesis Symposium</span>' +
+          '<span class="footer-url">symposium.orfe.princeton.edu</span>' +
+        '</div>' +
+      '</div>';
+
+    updateClock();
+  }
+
+  function loadAndRender() {
+    fetch('symposium_schedule.json', { cache: 'no-cache' })
+      .then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(data) {
+        var d = data[roomParam];
+        if (!d) {
+          document.getElementById('app').innerHTML =
+            '<div class="error-msg">Room ' + esc(roomParam) + ' not found.</div>';
+          return;
+        }
+
+        var entries = (d.schedule || []).map(function(pair) {
+          var timeRange = pair[0] || '';
+          var parts = timeRange.split(/\s*[\u2013\u2014-]+\s*/);
+          return {
+            startTime: parts[0] ? parts[0].trim() : '',
+            endTime: parts[1] ? parts[1].trim() : '',
+            name: pair[1] || ''
+          };
+        });
+
+        render({ roomNum: roomParam, entries: entries });
+      })
+      .catch(function(err) {
+        console.error('Load failed:', err);
+        document.getElementById('app').innerHTML =
+          '<div class="error-msg">Failed to load: ' + esc(err.message) + '</div>';
+      });
+  }
+
+  loadAndRender();
+  setInterval(loadAndRender, refreshMs);
+  setInterval(updateClock, 1000);
+})();
+</script>
+</body>
+</html>
