@@ -9,6 +9,9 @@ on:
 env:
   BYPASS_HDR: ${{ vars.BYPASS_HDR }}
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
