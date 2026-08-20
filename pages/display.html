@@ -442,7 +442,12 @@
   //   - princeton.edu: fetch live HTML directly
   //   - localhost dev: fetch from /proxy/schedule (see serve.py)
   const ON_GITHUB_PAGES = location.hostname.endsWith('.github.io');
-  const ON_PRINCETON = location.hostname.endsWith('princeton.edu');
+  // Anchored on a dot, plus an exact match. An unanchored suffix test would
+  // also accept lookalike hosts such as evilprinceton.edu.
+  function isPrincetonHost(h) {
+    return h === 'princeton.edu' || h.endsWith('.princeton.edu');
+  }
+  const ON_PRINCETON = isPrincetonHost(location.hostname);
 
   const DATA_MODE = ON_GITHUB_PAGES ? 'json'
                   : ON_PRINCETON    ? 'html'
