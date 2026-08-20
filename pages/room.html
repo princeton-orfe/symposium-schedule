@@ -248,7 +248,12 @@
   const QR_API = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=';
 
   const ON_GITHUB_PAGES = location.hostname.endsWith('.github.io');
-  const ON_PRINCETON = location.hostname.endsWith('princeton.edu');
+  // Anchored on a dot, plus an exact match. An unanchored suffix test would
+  // also accept lookalike hosts such as evilprinceton.edu.
+  function isPrincetonHost(h) {
+    return h === 'princeton.edu' || h.endsWith('.princeton.edu');
+  }
+  const ON_PRINCETON = isPrincetonHost(location.hostname);
   const DATA_MODE = ON_GITHUB_PAGES ? 'json' : ON_PRINCETON ? 'html' : 'proxy';
   const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
